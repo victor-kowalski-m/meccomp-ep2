@@ -3,10 +3,10 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(1); % passos em cm
+[dx, dy] = deal(0.1); % passos em cm
 lambda = 1.75;% lambda de sobrerrelaxação
 tolerancia = 0.0001; % criterio de parada do erro
-limite_iters = 10000; % numero maximo de iterações
+limite_iters = 100; % numero maximo de iterações
 
 rows = 20/dy; % numero de linhas da matriz
 cols = 22/dx; % numero de colunas da matriz
@@ -43,11 +43,13 @@ Aij_front_hori = @(j, i, mi1, Jz1, mi2, Jz2) ...
 
 % Calcula A por liebmann até alcançar a tolerância desejada ou bater o
 % limite de iterações
+iters = 0;
+erro_max = inf;
 while erro_max > tolerancia && iters < limite_iters
     
     iters = iters + 1;
     erro_max = 0;
-        
+          
     % Itera matriz por linha e coluna
     for j=2:rows-1 
         for i=2:cols-1
@@ -116,7 +118,8 @@ while erro_max > tolerancia && iters < limite_iters
             if erro > erro_max
                 erro_max = erro;
             end
-
+            
+            %fprintf("%.6f\n",erro)
         end
     end
     

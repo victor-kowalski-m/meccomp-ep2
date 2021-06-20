@@ -24,15 +24,14 @@ mibobina = mi0; % mi da bobina
 miJz = @(y) mibobina*(2*10^6*cos(pi*y/(12*10^-2)) + 8*10^5); 
 
 % Função de cálculo de Aij em um ponto no interior do domínio
-Aij_interior = @(i, j, miJz)...
+Aij_interior = @(j, i, miJz)...
     (A(j, i+1) + A(j, i-1) + A(j+1, i) + A(j - 1, i))/4 + miJz;
 
 % Função de cálculo de Aij na fronteira vertical entre dois meios
-Aij_front_vert = @(i, j, mi1, Jz1, mi2, Jz2)...
-    (-1/(dx*mibobina)*A(j, i-1) +  -1/(dx*mibobina)*A(j, i+1) ); 
+Aij_front_vert = @(j, i, mi1, Jz1, mi2, Jz2) 1; 
 
 % Função de cálculo de Aij na fronteira horizontal entre dois meios
-Aij_front_hori = @(i, j, mi1, Jz1, mi2, Jz2) 1;
+Aij_front_hori = @(j, i, mi1, Jz1, mi2, Jz2) 1;
  
 %% Aplicação do MDF
 
@@ -57,8 +56,6 @@ while erro_max > tolerancia && iters < limite_iters
                         
             % Fronteira vertical bobina-ferro esquerda
             if pos_x == 16 && pos_y > 4 && pos_y < 16
-                
-                Acalc = ((-1/(dx*mibobina)*A(j, i-1) +  (-1/(dx*mibobina)*A(j, i+1));
                 
             % Fronteira vertical bobina-ferro direita
             elseif pos_x == 20 && pos_y > 4 && pos_y < 16        
@@ -88,11 +85,11 @@ while erro_max > tolerancia && iters < limite_iters
             
             % Interior do domínio na bobina
             elseif pos_y > 4 && pos_y < 16 && ((pos_x > 14 && pos_x < 16) || pos_x > 20)      
-                Acalc = Aij_interior(i, j, miJz(pos_y));
+                Acalc = Aij_interior(j, i, miJz(pos_y));
                 
             % Interior do domínio ferro ou ar                      
             else
-                Acalc = Aij_interior(i, j, 0);
+                Acalc = Aij_interior(j, i, 0);
                 
             end
             

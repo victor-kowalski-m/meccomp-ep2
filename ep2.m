@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.01); % passos em metros
+[dx, dy] = deal(0.005); % passos em metros
 lambda = 1.75;% lambda de sobrerrelaxação
 tolerancia = 0.0001; % criterio de parada do erro
 limite_iters = 10000; % numero maximo de iterações
@@ -19,64 +19,57 @@ miferro = 2500*mi0; % mi do ferro
 miar = mi0; % mi do ar
 mibobina = mi0; % mi da bobina
 
-% mi = ones(rows, cols)*NaN;
-% mi(:, 1:4/23*cols) = miferro;
-% mi(1:4/23*cols, :) = miferro;
-
 MI = ones(rows, cols)*NaN; 
 JZ = zeros(rows, cols);
 
+% Função de cálculo de Jz na bobina
+Jz = @(y) (2*10^6*cos(pi*y/(12*10^-2)) + 8*10^5);
+
+% Preenche matriz de mi
 for j=2:rows-1 
-        for i=2:cols-1
+    for i=2:cols-1
             
-            pos_x = (i-1)*dx; % Posição do ponto no eixo x
-            pos_y = (j-1)*dy; % Posição do ponto no eixo y
-            
-            % Se está embaixo ou em cima da bobina externa, pula
-            if pos_x >= 0.20 && (pos_y <= 0.04 || pos_y >= 0.16)
-                continue;
-            end
-            
-            % Armadura
-            if pos_x > 0 && pos_x < 0.20 && pos_y > 0 && pos_y < 0.04
-                MIcalc = miferro;
-            
-            % Ar
-            elseif (pos_x > 0.04 && pos_x < 0.05 && pos_y > 0 && pos_y < 0.20)...
-                    || (pos_x >= 0.05 && pos_x < 0.14 && pos_y > 0.04 && pos_y < 0.16)...
-                    || (pos_x == 0.05 && (pos_y == 0.04 || pos_y == 0.16))
-                MIcalc = miar;
-                
-            % Nucleo de ferro
-            elseif (pos_x > 0.05 && pos_x < 0.20 && pos_y > 0 && pos_y < 0.04)...
-                    || (pos_x > 0.16 && pos_x < 0.20 && pos_y >= 0.04 && pos_y <= 0.16)...
-                    || (pos_x == 0.16 && (pos_y == 0.04 || pos_y == 0.16))
-                MIcalc = miferro;
-                
-            % Bobina
-            elseif (pos_y > 0.04 && pos_y < 0.16 &&...
-                    ((pos_x > 0.14 && pos_x < 0.16) || (pos_x > 0.20 && pos_x < 0.22))
-                MIcalc = mibobina
-                
-            end
-            
-            % Coloca o valor do MIcalc na matriz de mi
-            MI(i,j) = MIcalc
-            
-            % Adiciona o valor de Jz na regiao da bobina
-            if (pos_y >= 0.04 && pos_y =< 0.16 && ...
-                    ((pos_x >= 0.14 && pos_x =< 0.16) || (pos_x >= 0.20 && pos_x =< 0.22))
-                JZ(i,j) = Jz(pos_y)
-                
-            end
-                  
+        pos_x = (i-1)*dx; % Posição do ponto no eixo x
+        pos_y = (j-1)*dy; % Posição do ponto no eixo y
+
+        % Se está embaixo ou em cima da bobina externa, pula
+        if pos_x >= 0.20 && (pos_y <= 0.04 || pos_y >= 0.16)
+            continue;
+        end
+
+        % Armadura
+        if pos_x > 0 && pos_x < 0.04 && pos_y > 0 && pos_y < 0.20
+            MI(j, i) = miferro;
+
+        % Ar
+        elseif (pos_x > 0.04 && pos_x < 0.05 && pos_y > 0 && pos_y < 0.20)...
+                || (pos_x >= 0.05 && pos_x <= 0.14 && pos_y > 0.04 && pos_y < 0.16)...
+                || (pos_x == 0.05 && (pos_y == 0.04 || pos_y == 0.16))
+            MI(j, i) = miar;
+
+        % Nucleo de ferro
+        elseif (pos_x > 0.05 && pos_x < 0.20 && ((pos_y > 0 && pos_y < 0.04) || (pos_y > 0.16 && pos_y < 0.20)))...
+                || (pos_x > 0.16 && pos_x < 0.20 && pos_y > 0 && pos_y < 0.20)...
+                || (pos_x == 0.16 && (pos_y == 0.04 || pos_y == 0.16))
+            MI(j, i) = miferro;
+
+        % Bobina
+        elseif pos_y > 0.04 && pos_y < 0.16 &&...
+                ((pos_x > 0.14 && pos_x < 0.16) || (pos_x > 0.20 && pos_x < 0.22))
+            MI(j, i) = mibobina;
+
+        end
+
+        % Adiciona o valor de Jz na regiao da bobina
+        if pos_y >= 0.04 && pos_y <= 0.16 && ...
+                ((pos_x >= 0.14 && pos_x <= 0.16) || (pos_x >= 0.20 && pos_x <= 0.22))
+            JZ(j, i) = Jz(pos_y);
+
         end
     end
+end
 
 %% Funções auxiliares para cálculo de Aij
-
-% Função de cálculo de Jz na bobina
-Jz = @(y) (2*10^6*cos(pi*y/(12*10^-2)) + 8*10^5); 
 
 % Função de cálculo de Aij em um ponto no interior do domínio
 Aij_interior = @(A, j, i, mi, Jz)...
@@ -118,16 +111,15 @@ while erro_max > tolerancia && iters < limite_iters
                 continue;
             end
             
-            if isnan(A(j,i)) % se estiver em uma fronteira
-                if MI(j,i+1) ~= MI(j,i-1) % se é fronteira vertical
+            if isnan(MI(j,i)) % se estiver em uma fronteira
+                if ~isnan(MI(j, i+1)) % se é fronteira vertical
                     Acalc = Aij_front_vert(A, j, i, MI(j,i-1), JZ(j,i-1), MI(j,i+1), JZ(j,i+1));
-                elseif MI(j+1,i) ~= MI(j-1,i) % % se é fronteira horizontal
+                elseif ~isnan(MI(j+1,i)) % % se é fronteira horizontal
                     Acalc = Aij_front_vert(A, j, i, MI(j-1,i), JZ(j-1,i), MI(j+1,i), JZ(j+1,i));
                 end
             else % se estiver em um ponto interior do domínio
                 Acalc = Aij_interior(A, j, i, MI(j, i), JZ(j, i));
-            end
-                                      
+            end                                    
             
             % Calcula valor novo de A no ponto por Liebmann
             A(j, i) = lambda*Acalc + (1-lambda)*Aold(j, i);

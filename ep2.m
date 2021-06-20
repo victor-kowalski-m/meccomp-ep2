@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.001); % passos em metros
+[dx, dy] = deal(0.01); % passos em metros
 lambda = 1.75;% lambda de sobrerrelaxação
 tolerancia = 0.0001; % criterio de parada do erro
 limite_iters = 10000; % numero maximo de iterações
@@ -67,54 +67,17 @@ while erro_max > tolerancia && iters < limite_iters
             if pos_x >= 0.20 && (pos_y <= 0.04 || pos_y >= 0.16)
                 continue;
             end
-                        
-            % Fronteira vertical bobina-ferro esquerda
-            if pos_x == 0.16 && pos_y > 0.04 && pos_y < 0.16
-                Acalc = Aij_front_vert(A, j, i, mibobina, Jz(pos_y), miferro, 0);
             
-            % Fronteira vertical bobina-ferro direita
-            elseif pos_x == 0.20 && pos_y > 0.04 && pos_y < 0.16   
-                Acalc = Aij_front_vert(A, j, i, miferro, 0, mibobina, Jz(pos_y));
-
-            % Fronteira vertical ar-bobina
-            elseif pos_x == 0.14 && pos_y > 0.04 && pos_y < 0.16 
-                Acalc = Aij_front_vert(A, j, i, miar, 0, mibobina, Jz(pos_y));
-            
-            % Fronteira vertical ar-ferro esquerda
-            elseif pos_x == 0.04
-                Acalc = Aij_front_vert(A, j, i, miferro, 0, miar, 0);
-            
-            % Fronteira vertical ar-ferro direita
-            elseif (pos_y < 0.04 || pos_y > 0.16) && pos_x == 0.05
-                Acalc = Aij_front_vert(A, j, i, miar, 0, miferro, 0);
-            
-            % Fronteira horizontal bobina-ferro cima
-            elseif pos_y == 0.16 && pos_x > 0.14 && pos_x < 0.16
-                Acalc = Aij_front_hori(A, j, i, mibobina, Jz(pos_y), miferro, 0);
-            
-            % Fronteira horizontal bobina-ferro baixo
-            elseif pos_y == 0.04 && pos_x > 0.14 && pos_x < 0.16
-                Acalc = Aij_front_hori(A, j, i, miferro, 0, mibobina, Jz(pos_y));
-
-            % Fronteira horizontal ar-ferro cima
-            elseif pos_y == 0.16 && pos_x > 0.05 && pos_x < 0.14
-                Acalc = Aij_front_hori(A, j, i, miar, 0, miferro, 0);
-            
-            % Fronteira horizontal ar-ferro baixo
-            elseif pos_y == 0.04 && pos_x > 0.05 && pos_x < 0.14
-                Acalc = Aij_front_hori(A, j, i, miferro, 0, miar, 0);
-            
-            % Quinas bobina-ferro-ar ???
-            
-            % Interior do domínio na bobina
-            elseif pos_y > 0.04 && pos_y < 0.16 && ((pos_x > 0.14 && pos_x < 0.16) || pos_x > 0.20)      
-                Acalc = Aij_interior(A, j, i, mibobina, Jz(pos_y));
-                
-            % Interior do domínio ferro ou ar                      
-            else
-                Acalc = Aij_interior(A, j, i, 0, 0);
-                
+            if isnan(A(j,i)) % se estiver em uma fronteira
+                if MI(j,i+1) ~= MI(j,i-1) % se é fronteira vertical
+                    Acalc = Aij_front_vert(A, j, i, MI(j,i-1), JZ(j,i-1), MI(j,i+1), JZ(j,i+1));
+                elseif MI(j+1,i) ~= MI(j-1,i) % % se é fronteira horizontal
+                    Acalc = Aij_front_vert(A, j, i, MI(j-1,i), JZ(j-1,i), MI(j+1,i), JZ(j+1,i));
+                end
+            else % se estiver em um ponto interior do domínio
+                Acalc = Aij_interior(A, j, i, MI(j, i), JZ(j, i));
             end
+                                      
             
             % Calcula valor novo de A no ponto por Liebmann
             A(j, i) = lambda*Acalc + (1-lambda)*Aold(j, i);

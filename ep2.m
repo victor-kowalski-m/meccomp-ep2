@@ -2,20 +2,39 @@ clear
 clc
 close all
 
-dx = 1; % cm
-dy = 1; % cm
+%% Parâmetros iniciais
+[dx, dy] = deal(1); % passos em cm
 lambda = 1.75;% lambda de sobrerrelaxação
 tolerancia = 0.0001; % criterio de parada do erro
 limite_iters = 10000; % numero maximo de iterações
-mi0 = 4*pi*10^-7;
-miferro = 2500*mi0;
-miar = mi0;
-mibobina = mi0;
 
 rows = 20/dy; % numero de linhas da matriz
 cols = 22/dx; % numero de colunas da matriz
 A = zeros(rows, cols); % matriz inicial com zeros
-Anova = A;  % matriz com valores novos
+Anova = A;  % matriz para guardar valores novos em uma iteração
+
+mi0 = 4*pi*10^-7; % mi do vacuo
+miferro = 2500*mi0; % mi do ferro
+miar = mi0; % mi do ar
+mibobina = mi0; % mi da bobina
+
+%% Funções auxiliares para cálculo de Aij
+
+% Função de cálculo de mi*Jz na bobina
+miJz = @(y) mibobina*(2*10^6*cos(pi*y/(12*10^-2)) + 8*10^5); 
+
+% Função de cálculo de Aij em um ponto no interior do domínio
+Aij_interior = @(i, j, miJz)...
+    (A(j, i+1) + A(j, i-1) + A(j+1, i) + A(j - 1, i))/4 + miJz;
+
+% Função de cálculo de Aij na fronteira vertical entre dois meios
+Aij_front_vert = @(i, j, mi1, Jz1, mi2, Jz2)...
+    (-1/(dx*mibobina)*A(j, i-1) +  -1/(dx*mibobina)*A(j, i+1) ); 
+
+% Função de cálculo de Aij na fronteira horizontal entre dois meios
+Aij_front_hori = @(i, j, mi1, Jz1, mi2, Jz2) 1;
+ 
+%% Aplicação do MDF
 
 % Calcula A por liebmann até alcançar a tolerância desejada ou bater o
 % limite de iterações
@@ -38,7 +57,9 @@ while erro_max > tolerancia && iters < limite_iters
                         
             % Fronteira vertical bobina-ferro esquerda
             if pos_x == 16 && pos_y > 4 && pos_y < 16
-               
+                
+                Acalc = ((-1/(dx*mibobina)*A(j, i-1) +  (-1/(dx*mibobina)*A(j, i+1));
+                
             % Fronteira vertical bobina-ferro direita
             elseif pos_x == 20 && pos_y > 4 && pos_y < 16        
 
@@ -67,27 +88,27 @@ while erro_max > tolerancia && iters < limite_iters
             
             % Interior do domínio na bobina
             elseif pos_y > 4 && pos_y < 16 && ((pos_x > 14 && pos_x < 16) || pos_x > 20)      
-                Acalc = (A(j, i+1) + A(j, i-1) + A(j+1, i) + A(j - 1, i))/4;
+                Acalc = Aij_interior(i, j, miJz(pos_y));
                 
             % Interior do domínio ferro ou ar                      
             else
-                Acalc = (A(j, i+1) + A(j, i-1) + A(j+1, i) + A(j - 1, i))/4 ...
-                    + dx^2/4*(mi0*2*10^6*cos(pi*pos_y/(12*10^-2) + 8*10^5));
+                Acalc = Aij_interior(i, j, 0);
                 
             end
             
             % Calcula valor novo de A no ponto por Liebmann
-            Anova(row, col) = lambda*Acalc + (1-lambda)*A(row,col);
+            Anova(j, i) = lambda*Acalc + (1-lambda)*A(j, i);
 
             % Calcula erro no ponto e substitui o erro máximo se for maior
-            erro = abs(Anova(row, col) - A(row, col));
+            erro = abs(Anova(j, i) - A(j, i));
             if erro > erro_max
                 erro_max = erro;
             end
 
         end
     end
-
+    
+    % Atualiza a matriz A
     A = Anova;
     
 end

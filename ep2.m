@@ -100,11 +100,11 @@ while erro_max > tolerancia && iters < limite_iters
             
             % Interior do domínio na bobina
             elseif pos_y > 4 && pos_y < 16 && ((pos_x > 14 && pos_x < 16) || pos_x > 20)      
-                Acalc = Aij_interior(j, i, miJz(pos_y));
+                Acalc = Aij_interior(j, i, mibobina, Jz(pos_y));
                 
             % Interior do domínio ferro ou ar                      
             else
-                Acalc = Aij_interior(j, i, 0);
+                Acalc = Aij_interior(j, i, 0, 0);
                 
             end
             

@@ -3,13 +3,13 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.01); % passos em metros
+[dx, dy] = deal(0.001); % passos em metros
 lambda = 1.75;% lambda de sobrerrelaxação
 tolerancia = 0.0001; % criterio de parada do erro
 limite_iters = 10000; % numero maximo de iterações
 
-rows = 0.21/dy; % numero de linhas da matriz
-cols = 0.23/dx; % numero de colunas da matriz
+rows = 0.20/dy + 1; % numero de linhas da matriz
+cols = 0.22/dx + 1; % numero de colunas da matriz
 A = zeros(rows, cols); % matriz inicial com zeros
 
 % Anova = A;  % matriz para guardar valores novos em uma iteração
@@ -130,4 +130,5 @@ while erro_max > tolerancia && iters < limite_iters
     
 end
 
-%[Y,X] = meshgrid(0:dx:0.21,0:dx:0.23);
+[X,Y] = meshgrid(0:dx:0.22,0:dy:0.20);
+surf(X,Y,A)

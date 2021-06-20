@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.001); % passos em metros
+[dx, dy] = deal(0.005); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -103,8 +103,33 @@ while erro_max > tolerancia && iters < limite_iters
     
 end
 
+%% Cálculo do vetor B
+
+% Inicialização das matrizes do fluxo de 
+Bx = zeros(rows, cols);
+By = zeros(rows, cols);
+
+for j = 2:rows-1
+   for i = 2:cols-1
+       
+      Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+      By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+       
+   end
+end
+
 %% Plots
 
+% Plot de Az
 [X,Y] = meshgrid(0:dx:0.22,0:dy:0.20);
 surf(X,Y,A)
 colorbar
+
+% Plot de B
+
+fig = figure("Name", "Vetor de densidade superficial de fluxo magnético");
+fluxo = quiver(X,Y,Bx,By);
+axis equal
+xlabel("x(m)")
+ylabel("y(m)")
+grid()

@@ -43,11 +43,11 @@ while erro_max > tolerancia && iters < limite_iters
     erro_max = 0;
         
     % Itera matriz por linha e coluna
-    for j=1:rows-1 
-        for i=1:cols-1
+    for j=2:rows-1 
+        for i=2:cols-1
             
-            pos_x = col*dx; % Posição do ponto no eixo x
-            pos_y = row*dy; % Posição do ponto no eixo y
+            pos_x = i*dx; % Posição do ponto no eixo x
+            pos_y = j*dy; % Posição do ponto no eixo y
             
             % Se está embaixo ou em cima da bobina externa, pula
             if pos_x >= 20 && (pos_y <= 4 || pos_y >= 16)
@@ -56,21 +56,27 @@ while erro_max > tolerancia && iters < limite_iters
                         
             % Fronteira vertical bobina-ferro esquerda
             if pos_x == 16 && pos_y > 4 && pos_y < 16
-                
+                Acalc = Aij_front_vert(j, i, mibobina, Jz(pos_y), miferro, 0);
+            
             % Fronteira vertical bobina-ferro direita
-            elseif pos_x == 20 && pos_y > 4 && pos_y < 16        
+            elseif pos_x == 20 && pos_y > 4 && pos_y < 16   
+                Acalc = Aij_front_vert(j, i, miferro, 0, mibobina, Jz(pos_y));
 
             % Fronteira vertical ar-bobina
             elseif pos_x == 14 && pos_y > 4 && pos_y < 16 
+                Acalc = Aij_front_vert(j, i, miar, 0, mibobina, Jz(pos_y));
             
             % Fronteira vertical ar-ferro esquerda
             elseif pos_x == 4
+                Acalc = Aij_front_vert(j, i, miferro, 0, miar, 0);
             
             % Fronteira vertical ar-ferro direita
             elseif (pos_y < 4 || pos_y > 16) && pos_x == 5
+                Acalc = Aij_front_vert(j, i, miar, 0, miferro, 0);
             
             % Fronteira horizontal bobina-ferro cima
             elseif pos_y == 16 && pos_x > 14 && pos_x < 16
+                Acalc = Aij_front_hori(j, i, mibobina, Jz(pos_y), miferro, Jz2);
             
             % Fronteira horizontal bobina-ferro baixo
             elseif pos_y == 4 && pos_x > 14 && pos_x < 16

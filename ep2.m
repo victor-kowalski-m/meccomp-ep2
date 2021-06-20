@@ -107,3 +107,4 @@ end
 
 [X,Y] = meshgrid(0:dx:0.22,0:dy:0.20);
 surf(X,Y,A)
+colorbar

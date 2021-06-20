@@ -52,8 +52,8 @@ while erro_max > tolerancia && iters < limite_iters
     for j=2:rows-1 
         for i=2:cols-1
             
-            pos_x = i*dx; % Posição do ponto no eixo x
-            pos_y = j*dy; % Posição do ponto no eixo y
+            pos_x = (i-1)*dx; % Posição do ponto no eixo x
+            pos_y = (j-1)*dy; % Posição do ponto no eixo y
             
             % Se está embaixo ou em cima da bobina externa, pula
             if pos_x >= 20 && (pos_y <= 4 || pos_y >= 16)

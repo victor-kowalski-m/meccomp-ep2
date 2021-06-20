@@ -118,6 +118,22 @@ for j = 2:rows-1
    end
 end
 
+%% Cálculo do vetor H
+
+% Inicialização das matrizes do fluxo de 
+Hx = zeros(rows, cols);
+Hy = zeros(rows, cols);
+
+for j = 2:rows-1
+   for i = 2:cols-1
+       
+      Hx(j,i) = Bx(j,i)/MI(j,i);
+      Hy(j,i) = By(j,i)/MI(j,i);
+       
+   end
+end
+
+
 %% Plots
 
 % Plot de Az
@@ -126,9 +142,16 @@ surf(X,Y,A)
 colorbar
 
 % Plot de B
-
 fig = figure("Name", "Vetor de densidade superficial de fluxo magnético");
 fluxo = quiver(X,Y,Bx,By);
+axis equal
+xlabel("x(m)")
+ylabel("y(m)")
+grid()
+
+% Plot de H
+fig = figure("Name", "Vetor de intensidade de campo magnético");
+campo = quiver(X,Y,Hx,Hy);
 axis equal
 xlabel("x(m)")
 ylabel("y(m)")

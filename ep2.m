@@ -20,18 +20,24 @@ mibobina = mi0; % mi da bobina
 
 %% Funções auxiliares para cálculo de Aij
 
-% Função de cálculo de mi*Jz na bobina
-miJz = @(y) mibobina*(2*10^6*cos(pi*y/(12*10^-2)) + 8*10^5); 
+% Função de cálculo de Jz na bobina
+Jz = @(y) mibobina*(2*10^6*cos(pi*y/(12*10^-2)) + 8*10^5); 
 
 % Função de cálculo de Aij em um ponto no interior do domínio
-Aij_interior = @(j, i, miJz)...
-    (A(j, i+1) + A(j, i-1) + A(j+1, i) + A(j - 1, i))/4 + miJz;
+Aij_interior = @(j, i, mi, Jz)...
+    (A(j, i+1) + A(j, i-1) + A(j+1, i) + A(j - 1, i))/4 + mi*Jz;
 
 % Função de cálculo de Aij na fronteira vertical entre dois meios
-Aij_front_vert = @(j, i, mi1, Jz1, mi2, Jz2) 1; 
+Aij_front_vert = @(j, i, mi1, Jz1, mi2, Jz2)...
+    ((-1/(dx*mi1))*A(j, i-1) + (-1/(dx*mi2))*A(j, i+1) + ...
+    (-1/(2*dx))*(1/mi2 + 1/mi1)*(A(j+1, i) + A(j-1, i)) + ...
+    (-dx/2)*(Jz2 + Jz1))/((1/mi2 + 1/mi1)*(-2/dx)); 
 
 % Função de cálculo de Aij na fronteira horizontal entre dois meios
-Aij_front_hori = @(j, i, mi1, Jz1, mi2, Jz2) 1;
+Aij_front_hori = @(j, i, mi1, Jz1, mi2, Jz2) ...
+    ((-1/(dx*mi1))*A(j-1, i) + (-1/(dx*mi2))*A(j+1, i) + ...
+    (-1/(2*dx))*(1/mi2 + 1/mi1)*(A(j, i+1) + A(j, i-1)) + ...
+    (-dx/2)*(Jz2 + Jz1))/((1/mi2 + 1/mi1)*(-2/dx));
  
 %% Aplicação do MDF
 

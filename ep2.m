@@ -23,6 +23,56 @@ mibobina = mi0; % mi da bobina
 % mi(:, 1:4/23*cols) = miferro;
 % mi(1:4/23*cols, :) = miferro;
 
+MI = ones(rows, cols)*NaN; 
+JZ = zeros(rows, cols);
+
+for j=2:rows-1 
+        for i=2:cols-1
+            
+            pos_x = (i-1)*dx; % Posição do ponto no eixo x
+            pos_y = (j-1)*dy; % Posição do ponto no eixo y
+            
+            % Se está embaixo ou em cima da bobina externa, pula
+            if pos_x >= 0.20 && (pos_y <= 0.04 || pos_y >= 0.16)
+                continue;
+            end
+            
+            % Armadura
+            if pos_x > 0 && pos_x < 0.20 && pos_y > 0 && pos_y < 0.04
+                MIcalc = miferro;
+            
+            % Ar
+            elseif (pos_x > 0.04 && pos_x < 0.05 && pos_y > 0 && pos_y < 0.20)...
+                    || (pos_x >= 0.05 && pos_x < 0.14 && pos_y > 0.04 && pos_y < 0.16)...
+                    || (pos_x == 0.05 && (pos_y == 0.04 || pos_y == 0.16))
+                MIcalc = miar;
+                
+            % Nucleo de ferro
+            elseif (pos_x > 0.05 && pos_x < 0.20 && pos_y > 0 && pos_y < 0.04)...
+                    || (pos_x > 0.16 && pos_x < 0.20 && pos_y >= 0.04 && pos_y <= 0.16)...
+                    || (pos_x == 0.16 && (pos_y == 0.04 || pos_y == 0.16))
+                MIcalc = miferro;
+                
+            % Bobina
+            elseif (pos_y > 0.04 && pos_y < 0.16 &&...
+                    ((pos_x > 0.14 && pos_x < 0.16) || (pos_x > 0.20 && pos_x < 0.22))
+                MIcalc = mibobina
+                
+            end
+            
+            % Coloca o valor do MIcalc na matriz de mi
+            MI(i,j) = MIcalc
+            
+            % Adiciona o valor de Jz na regiao da bobina
+            if (pos_y >= 0.04 && pos_y =< 0.16 && ...
+                    ((pos_x >= 0.14 && pos_x =< 0.16) || (pos_x >= 0.20 && pos_x =< 0.22))
+                JZ(i,j) = Jz(pos_y)
+                
+            end
+                  
+        end
+    end
+
 %% Funções auxiliares para cálculo de Aij
 
 % Função de cálculo de Jz na bobina

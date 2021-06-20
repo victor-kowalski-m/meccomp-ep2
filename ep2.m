@@ -82,16 +82,19 @@ while erro_max > tolerancia && iters < limite_iters
             
             % Fronteira horizontal bobina-ferro cima
             elseif pos_y == 16 && pos_x > 14 && pos_x < 16
-                Acalc = Aij_front_hori(j, i, mibobina, Jz(pos_y), miferro, Jz2);
+                Acalc = Aij_front_hori(j, i, mibobina, Jz(pos_y), miferro, 0);
             
             % Fronteira horizontal bobina-ferro baixo
             elseif pos_y == 4 && pos_x > 14 && pos_x < 16
+                Acalc = Aij_front_hori(j, i, miferro, 0, mibobina, Jz(pos_y));
 
             % Fronteira horizontal ar-ferro cima
             elseif pos_y == 16 && pos_x > 5 && pos_x < 14
+                Acalc = Aij_front_hori(j, i, miar, 0, miferro, 0);
             
             % Fronteira horizontal ar-ferro baixo
             elseif pos_y == 4 && pos_x > 5 && pos_x < 14
+                Acalc = Aij_front_hori(j, i, miferro, 0, miar, 0);
             
             % Quinas bobina-ferro-ar ???
             

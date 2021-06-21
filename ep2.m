@@ -141,6 +141,8 @@ for j = 1:rows
        % Se for canto ele pula, pois ja foi preenchido
        if ((j == 1 && i == 1) || (j == rows && i == 1) || ...
                (j == 1 && i == cols) || (j == rows && i == cols))
+           Hx(j,i) = Bx(j,i)/MI(j,i);
+           Hy(j,i) = By(j,i)/MI(j,i);
            continue;
        end
        

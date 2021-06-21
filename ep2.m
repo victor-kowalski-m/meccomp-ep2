@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.005); % passos em metros
+[dx, dy] = deal(0.001); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -39,19 +39,21 @@ end
 
 %% Funções auxiliares para cálculo de Aij
 
+dx2 = dx^2;
+
 % Função de cálculo de Aij em um ponto no interior do domínio
 Aij_interior = @(A, j, i, mi, Jz)...
-    (A(j, i+1) + A(j, i-1) + A(j+1, i) + A(j - 1, i))/4 + mi*Jz;
+    (A(j, i+1) + A(j, i-1) + A(j+1, i) + A(j - 1, i))/4 + dx2/4*mi*Jz;
 
 % Função de cálculo de Aij na fronteira vertical entre dois meios
 Aij_front_vert = @(A, j, i, mi1, Jz1, mi2, Jz2)...
     (2*(mi2*A(j,i-1) + mi1*A(j,i+1)) + (mi1 + mi2)*(A(j-1,i) + A(j+1,i))...
-    + (mi1*mi2*dx^2)*(Jz1 + Jz2))/(4*(mi1 + mi2));
+    + (mi1*mi2*dx2)*(Jz1 + Jz2))/(4*(mi1 + mi2));
 
 % Função de cálculo de Aij na fronteira horizontal entre dois meios
 Aij_front_hori = @(A, j, i, mi1, Jz1, mi2, Jz2) ...
     (2*(mi2*A(j-1,i) + mi1*A(j+1,i)) + (mi1 + mi2)*(A(j,i-1) + A(j,i+1))...
-    + (mi1*mi2*dx^2)*(Jz1 + Jz2))/(4*(mi1 + mi2));
+    + (mi1*mi2*dx2)*(Jz1 + Jz2))/(4*(mi1 + mi2));
  
 %% Aplicação do MDF
 
@@ -129,11 +131,11 @@ end
 
 % Plot de Az
 [X,Y] = meshgrid(0:dx:0.22,0:dy:0.20);
-surf(X,Y,A)
+surf(X,Y,A, 'LineStyle', ':')
 colorbar
 
 % Plot de B
-fig = figure("Name", "Vetor de densidade superficial de fluxo magnético");
+figB = figure("Name", "Vetor de densidade superficial de fluxo magnético");
 fluxo = quiver(X,Y,Bx,By);
 axis equal
 xlabel("x(m)")
@@ -141,7 +143,7 @@ ylabel("y(m)")
 grid()
 
 % Plot de H
-fig = figure("Name", "Vetor de intensidade de campo magnético");
+figH = figure("Name", "Vetor de intensidade de campo magnético");
 campo = quiver(X,Y,Hx,Hy);
 axis equal
 xlabel("x(m)")

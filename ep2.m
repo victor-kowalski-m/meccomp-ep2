@@ -46,12 +46,12 @@ Aij_interior = @(A, j, i, mi, Jz)...
 % Função de cálculo de Aij na fronteira vertical entre dois meios
 Aij_front_vert = @(A, j, i, mi1, Jz1, mi2, Jz2)...
     (2*(mi2*A(j,i-1) + mi1*A(j,i+1)) + (mi1 + mi2)*(A(j-1,i) + A(j+1,i))...
-    + (mi1*mi2*dx^2)*(Jz1 + Jz2))/(4*(mi1 + mi2)); 
+    + (mi1*mi2*dx^2)*(Jz1 + Jz2))/(4*(mi1 + mi2));
 
 % Função de cálculo de Aij na fronteira horizontal entre dois meios
 Aij_front_hori = @(A, j, i, mi1, Jz1, mi2, Jz2) ...
     (2*(mi2*A(j-1,i) + mi1*A(j+1,i)) + (mi1 + mi2)*(A(j,i-1) + A(j,i+1))...
-    + (mi1*mi2*dx^2)*(Jz1 + Jz2))/(4*(mi1 + mi2)); 
+    + (mi1*mi2*dx^2)*(Jz1 + Jz2))/(4*(mi1 + mi2));
  
 %% Aplicação do MDF
 
@@ -103,22 +103,11 @@ while erro_max > tolerancia && iters < limite_iters
     
 end
 
-%% Cálculo do vetor B
+%% Cálculo do vetor B e H
 
 % Inicialização das matrizes do fluxo de 
 Bx = zeros(rows, cols);
 By = zeros(rows, cols);
-
-for j = 2:rows-1
-   for i = 2:cols-1
-       
-      Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
-      By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
-       
-   end
-end
-
-%% Cálculo do vetor H
 
 % Inicialização das matrizes do fluxo de 
 Hx = zeros(rows, cols);
@@ -127,12 +116,14 @@ Hy = zeros(rows, cols);
 for j = 2:rows-1
    for i = 2:cols-1
        
+      Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+      By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+      
       Hx(j,i) = Bx(j,i)/MI(j,i);
       Hy(j,i) = By(j,i)/MI(j,i);
        
    end
 end
-
 
 %% Plots
 

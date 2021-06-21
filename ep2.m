@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.001); % passos em metros
+[dx, dy] = deal(0.005); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -111,18 +111,68 @@ end
 Bx = zeros(rows, cols);
 By = zeros(rows, cols);
 
+% Canto inferior esquerdo
+j = 1; i = 1;
+Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
+By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
+
+% Canto superior esquerdo
+j = rows; i = 1;
+Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
+By(j,1) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
+
+% Canto inferior direito
+j = 1; i = cols;
+Bx(1,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
+By(1,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+
+% Canto superior direito
+j = rows; i = cols;
+Bx(j,i) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
+By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+
 % Inicialização das matrizes do fluxo de 
 Hx = zeros(rows, cols);
 Hy = zeros(rows, cols);
 
-for j = 2:rows-1
-   for i = 2:cols-1
+for j = 1:rows
+   for i = 1:cols
        
-      Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
-      By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+       % Se for canto ele pula, pois ja foi preenchido
+       if ((j == 1 && i == 1) || (j == rows && i == 1) || ...
+               (j == 1 && i == cols) || (j == rows && i == cols))
+           continue;
+       end
+       
+       % Borda inferior
+       if j == 1
+           Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
+           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+           
+       % Borda superior
+       elseif j == rows
+           Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
+           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+           
+       % Borda esquerda
+       elseif i == 1
+           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+           By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
+           
+       % Borda direita
+       elseif i == cols
+           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+           By(1,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+           
+       % Parte interna
+       else
+           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+       end
+       
       
-      Hx(j,i) = Bx(j,i)/MI(j,i);
-      Hy(j,i) = By(j,i)/MI(j,i);
+       Hx(j,i) = Bx(j,i)/MI(j,i);
+       Hy(j,i) = By(j,i)/MI(j,i);
        
    end
 end

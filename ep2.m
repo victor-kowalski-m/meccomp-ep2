@@ -111,25 +111,25 @@ end
 Bx = zeros(rows, cols);
 By = zeros(rows, cols);
 
-% Canto inferior esquerdo
-j = 1; i = 1;
-Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
-By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
-
-% Canto superior esquerdo
-j = rows; i = 1;
-Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
-By(j,1) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
-
-% Canto inferior direito
-j = 1; i = cols;
-Bx(1,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
-By(1,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
-
-% Canto superior direito
-j = rows; i = cols;
-Bx(j,i) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
-By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+% % Canto inferior esquerdo
+% j = 1; i = 1;
+% Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
+% By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
+% 
+% % Canto superior esquerdo
+% j = rows; i = 1;
+% Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
+% By(j,1) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
+% 
+% % Canto inferior direito
+% j = 1; i = cols;
+% Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
+% By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+% 
+% % Canto superior direito
+% j = rows; i = cols;
+% Bx(j,i) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
+% By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
 
 % Inicialização das matrizes do fluxo de 
 Hx = zeros(rows, cols);

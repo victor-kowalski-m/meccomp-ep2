@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.001); % passos em metros
+[dx, dy] = deal(0.005); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -141,31 +141,36 @@ Hy = zeros(rows, cols);
 for j = 1:rows
    for i = 1:cols
        
+       pos_x = (i-1)*dx;
+       pos_y = (j-1)*dy;
+       
        % Se for canto ele pula, pois ja foi preenchido
-       if ((j == 1 && i == 1) || (j == rows && i == 1) || ...
-               (j == 1 && i == cols) || (j == rows && i == cols))
+       if ((pos_y == 0 && pos_x == 0) || (pos_y == 0.20 && pos_x == 0) || ...
+               (pos_y == 0 && pos_x == 0.22) || (pos_y == 0.20 && pos_x == 0.22))
            Hx(j,i) = Bx(j,i)/MI(j,i);
            Hy(j,i) = By(j,i)/MI(j,i);
            continue;
        end
        
        % Borda inferior
-       if j == 1
+       if (pos_y == 0 && pos_x > 0 && pos_x < 20) ||...
+               (pos_y == 0.04 && pos_x > 0.20 && pos_x < 0.22)
            Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
            By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
            
        % Borda superior
-       elseif j == rows
+       elseif (pos_y == 0.20 && pos_x > 0 && pos_x < 20) ||...
+               (pos_y == 0.16 && pos_x > 0.20 && pos_x < 0.22)
            Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
            By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
            
        % Borda esquerda
-       elseif i == 1
+       elseif pos_x == 0
            Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
            By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
            
        % Borda direita
-       elseif i == cols
+       elseif pos_x == 0.22
            Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
            By(1,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
            

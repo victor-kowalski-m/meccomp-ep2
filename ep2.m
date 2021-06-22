@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.005); % passos em metros
+[dx, dy] = deal(0.001); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -30,10 +30,13 @@ MI(row_eq(16), col_eq(5)) = mi0;
 
 % Define matriz de e densidade superficial de corrente elétrica no domínio
 JZ = zeros(rows, cols);
-Jz = @(y) (2*10^6*cos(pi*y/(12*10^-2)) + 8*10^5);
+Jz = @(y) (2*10^6*cos(pi*(y-0.1)/(12*10^-2)) + 8*10^5);
 for j=row_eq(4)+1:row_eq(16)-1 
-    for i=cat(2, col_eq(14):col_eq(16)-1, col_eq(20)+1:col_eq(22))    
+    for i = col_eq(20)+1:col_eq(22)
         JZ(j, i) = Jz((j-1)*dy);
+    end
+    for i = col_eq(14):col_eq(16)-1 
+        JZ(j, i) = -Jz((j-1)*dy);  
     end
 end
 
@@ -111,18 +114,70 @@ end
 Bx = zeros(rows, cols);
 By = zeros(rows, cols);
 
+% % Canto inferior esquerdo
+% j = 1; i = 1;
+% Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
+% By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
+% 
+% % Canto superior esquerdo
+% j = rows; i = 1;
+% Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
+% By(j,1) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
+% 
+% % Canto inferior direito
+% j = 1; i = cols;
+% Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
+% By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+% 
+% % Canto superior direito
+% j = rows; i = cols;
+% Bx(j,i) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
+% By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+
 % Inicialização das matrizes do fluxo de 
 Hx = zeros(rows, cols);
 Hy = zeros(rows, cols);
 
-for j = 2:rows-1
-   for i = 2:cols-1
+for j = 1:rows
+   for i = 1:cols
        
-      Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
-      By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+       % Se for canto ele pula, pois ja foi preenchido
+       if ((j == 1 && i == 1) || (j == rows && i == 1) || ...
+               (j == 1 && i == cols) || (j == rows && i == cols))
+           Hx(j,i) = Bx(j,i)/MI(j,i);
+           Hy(j,i) = By(j,i)/MI(j,i);
+           continue;
+       end
+       
+       % Borda inferior
+       if j == 1
+           Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
+           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+           
+       % Borda superior
+       elseif j == rows
+           Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
+           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+           
+       % Borda esquerda
+       elseif i == 1
+           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+           By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
+           
+       % Borda direita
+       elseif i == cols
+           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+           By(1,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+           
+       % Parte interna
+       else
+           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+       end
+       
       
-      Hx(j,i) = Bx(j,i)/MI(j,i);
-      Hy(j,i) = By(j,i)/MI(j,i);
+       Hx(j,i) = Bx(j,i)/MI(j,i);
+       Hy(j,i) = By(j,i)/MI(j,i);
        
    end
 end

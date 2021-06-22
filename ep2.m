@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.005); % passos em metros
+[dx, dy] = deal(0.0025); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -25,8 +25,6 @@ MI(:, col_eq(0):col_eq(4)) = miferro;
 MI(:, col_eq(16):col_eq(20)) = miferro;
 MI(row_eq(0):row_eq(4), col_eq(5):col_eq(20)) = miferro;
 MI(row_eq(16):row_eq(20), col_eq(5):col_eq(20)) = miferro;
-MI(row_eq(4), col_eq(5)) = mi0;
-MI(row_eq(16), col_eq(5)) = mi0;
 
 % Define matriz de e densidade superficial de corrente elétrica no domínio
 JZ = zeros(rows, cols);
@@ -110,33 +108,9 @@ end
 
 %% Cálculo do vetor B e H
 
-% Inicialização das matrizes do fluxo de 
-Bx = zeros(rows, cols);
-By = zeros(rows, cols);
-
-% % Canto inferior esquerdo
-% j = 1; i = 1;
-% Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
-% By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
-% 
-% % Canto superior esquerdo
-% j = rows; i = 1;
-% Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
-% By(j,1) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
-% 
-% % Canto inferior direito
-% j = 1; i = cols;
-% Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
-% By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
-% 
-% % Canto superior direito
-% j = rows; i = cols;
-% Bx(j,i) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
-% By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
-
-% Inicialização das matrizes do fluxo de 
-Hx = zeros(rows, cols);
-Hy = zeros(rows, cols);
+% Inicialização das matrizes de densidade superficial de fluxo magnético e
+% intensidade de campo magnético
+[Bx, By, Hx, Hy] = deal(zeros(rows, cols));
 
 for j = 1:rows
    for i = 1:cols
@@ -144,11 +118,9 @@ for j = 1:rows
        pos_x = (i-1)*dx;
        pos_y = (j-1)*dy;
        
-       % Se for canto ele pula, pois ja foi preenchido
+       % Se for canto ele pula
        if ((pos_y == 0 && pos_x == 0) || (pos_y == 0.20 && pos_x == 0) || ...
                (pos_y == 0 && pos_x == 0.22) || (pos_y == 0.20 && pos_x == 0.22))
-           Hx(j,i) = Bx(j,i)/MI(j,i);
-           Hy(j,i) = By(j,i)/MI(j,i);
            continue;
        end
        
@@ -156,23 +128,19 @@ for j = 1:rows
        if (pos_y == 0 && pos_x > 0 && pos_x < 20) ||...
                (pos_y == 0.04 && pos_x > 0.20 && pos_x < 0.22)
            Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
-           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
            
        % Borda superior
        elseif (pos_y == 0.20 && pos_x > 0 && pos_x < 20) ||...
                (pos_y == 0.16 && pos_x > 0.20 && pos_x < 0.22)
-           Bx(j,1) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
-           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+           Bx(j,i) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
            
        % Borda esquerda
-       elseif pos_x == 0
-           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+       elseif pos_x == 0   
            By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
            
        % Borda direita
        elseif pos_x == 0.22
-           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
-           By(1,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
+           By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
            
        % Parte interna
        else
@@ -180,7 +148,6 @@ for j = 1:rows
            By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
        end
        
-      
        Hx(j,i) = Bx(j,i)/MI(j,i);
        Hy(j,i) = By(j,i)/MI(j,i);
        

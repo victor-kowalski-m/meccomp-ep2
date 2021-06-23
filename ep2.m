@@ -204,7 +204,7 @@ Fela_y = 1/(2*mi0)*(...
 % ---------------------------------------------------------------------- %
 
 %% Parâmetros iniciais para o item e)
-[dx, dy] = deal(0.005); % passos em metros
+[dx, dy] = deal(0.001); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz

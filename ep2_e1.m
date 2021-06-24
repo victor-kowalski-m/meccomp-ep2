@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais para o item e)
-[dx, dy] = deal(0.001); % passos em metros
+[dx, dy] = deal(0.005); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -125,8 +125,8 @@ end
 % intensidade de campo magnético
 [Bx, By, Hx, Hy] = deal(zeros(rows, cols));
 
-for j = 1:rows
-   for i = 1:cols
+for j = 2:rows-1
+   for i = 2:cols-1
        
        pos_x = (i-1)*dx;
        pos_y = (j-1)*dy;
@@ -193,20 +193,10 @@ grid()
 %% Força
 
 Fela_x = 1/(2*mi0)*(...
-    trapz(0:dx:0.2, Bx(:, col_eq(4)).^2 - By(:, col_eq(4)).^2) -...
-    trapz(0:dx:0.04, 2*Bx(row_eq(20), col_eq(0):col_eq(4)) ...
-    .*By(row_eq(20), col_eq(0):col_eq(4))) +...
-    trapz(0:dx:0.2, Bx(:, col_eq(0)).^2 - By(:, col_eq(0)).^2) -...
-    trapz(0:dx:0.04, 2*Bx(row_eq(0), col_eq(0):col_eq(4)) ...
-    .*By(row_eq(0), col_eq(0):col_eq(4))) );
+    trapz(-0.1:dx:0.1, Bx(:, col_eq(4)).^2 - By(:, col_eq(4)).^2) );
 
 Fela_y = 1/(2*mi0)*(...
-    trapz(0:dx:0.2, 2*Bx(:, col_eq(4)).*By(:, col_eq(4))) -...
-    trapz(0:dx:0.04, By(row_eq(20), col_eq(0):col_eq(4)).^2 ...
-    - Bx(row_eq(20), col_eq(0):col_eq(4)).^2) +...
-    trapz(0:dx:0.2, 2*Bx(:, col_eq(0)).*By(:, col_eq(0))) -...
-    trapz(0:dx:0.04, By(row_eq(0), col_eq(0):col_eq(4)).^2 ...
-    - Bx(row_eq(0), col_eq(0):col_eq(4)).^2));
+    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)).*By(:, col_eq(4))) );
 
 
 

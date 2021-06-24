@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.001); % passos em metros
+[dx, dy] = deal(0.005); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -119,29 +119,9 @@ for j = 2:rows-1
        pos_x = (i-1)*dx;
        pos_y = (j-1)*dy;
        
-       % Se for canto ele pula
-       if ((pos_y == 0 && pos_x == 0) || (pos_y == 0.20 && pos_x == 0) || ...
-               (pos_y == 0 && pos_x == 0.22) || (pos_y == 0.20 && pos_x == 0.22))
+       % Se está embaixo ou em cima da bobina externa, pula
+       if (pos_x >= 0.20 && pos_x <= 0.04 && pos_x >= 0.16)
            continue;
-       end
-       
-       % Borda inferior
-       if (pos_y == 0 && pos_x > 0 && pos_x < 20) ||...
-               (pos_y == 0.04 && pos_x > 0.20 && pos_x < 0.22)
-           Bx(j,i) = (-A(j+2,i) + 4*A(j+1,i) - 3*A(j,i))/(2*dy);
-           
-       % Borda superior
-       elseif (pos_y == 0.20 && pos_x > 0 && pos_x < 20) ||...
-               (pos_y == 0.16 && pos_x > 0.20 && pos_x < 0.22)
-           Bx(j,i) = (3*A(j,i) - 4*A(j-1,i) + A(j-2,i))/(2*dy);
-           
-       % Borda esquerda
-       elseif pos_x == 0   
-           By(j,i) = -(-A(j,i+2) + 4*A(j,i+1) - 3*A(j,i))/(2*dx);
-           
-       % Borda direita
-       elseif pos_x == 0.22
-           By(j,i) = -(3*A(j,i) - 4*A(j,i-1) + A(j,i-2))/(2*dx);
            
        % Parte interna
        else

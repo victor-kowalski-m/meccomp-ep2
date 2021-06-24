@@ -178,6 +178,7 @@ Fela_x = 1/(2*mi0)*(...
 Fela_y = 1/(2*mi0)*(...
     trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)).*By(:, col_eq(4))) );
 
-
+fprintf('A força Fx = %8.4f \n',Fela_x);
+fprintf('A força Fy = %8.4f \n',Fela_y);
 
 

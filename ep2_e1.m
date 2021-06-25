@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais para o item e)
-[dx, dy] = deal(0.005); % passos em metros
+[dx, dy] = deal(0.001); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -19,26 +19,26 @@ fim_bobina = [row_eq(16) col_eq(22)]; % linha e coluna finais da bobina
 
 % Define matriz de permeabilidade magnética no domínio
 mi0 = 4*pi*10^-7; % permeabilidade magnética do vacuo, do ar e da bobina
-miferrox = 1200*mi0; % permeabilidade magnética do ferro em x
+miferrox = 2500*mi0; %1200*mi0; % permeabilidade magnética do ferro em x
 miferroy = 2500*mi0; % permeabilidade magnética do ferro em y
 [MIx,MIy] = deal(ones(rows, cols)*mi0);
-MIx(:, col_eq(0):col_eq(4)) = miferrox;
-MIx(:, col_eq(16):col_eq(20)) = miferrox;
-MIx(row_eq(0):row_eq(4), col_eq(5):col_eq(20)) = miferrox;
-MIx(row_eq(16):row_eq(20), col_eq(5):col_eq(20)) = miferrox;
-MIy(:, col_eq(0):col_eq(4)) = miferroy;
-MIy(:, col_eq(16):col_eq(20)) = miferroy;
-MIy(row_eq(0):row_eq(4), col_eq(5):col_eq(20)) = miferroy;
-MIy(row_eq(16):row_eq(20), col_eq(5):col_eq(20)) = miferroy;
+MIx(:, col_eq(0):col_eq(4)-1) = miferrox;
+MIx(:, col_eq(16)+1:col_eq(20)-1) = miferrox;
+MIx(row_eq(0):row_eq(4)-1, col_eq(5)+1:col_eq(20)-1) = miferrox;
+MIx(row_eq(16)+1:row_eq(20), col_eq(5)+1:col_eq(20)-1) = miferrox;
+MIy(:, col_eq(0):col_eq(4)-1) = miferroy;
+MIy(:, col_eq(16)+1:col_eq(20)-1) = miferroy;
+MIy(row_eq(0):row_eq(4)-1, col_eq(5)+1:col_eq(20)-1) = miferroy;
+MIy(row_eq(16)+1:row_eq(20), col_eq(5)+1:col_eq(20)-1) = miferroy;
 
 % Define matriz de e densidade superficial de corrente elétrica no domínio
 JZ = zeros(rows, cols);
 Jz = @(y) (2*10^6*cos(pi*(y-0.1)/(12*10^-2)) + 8*10^5);
-for j=row_eq(4)+1:row_eq(16)-1 
-    for i = col_eq(20)+1:col_eq(22)
+for j=row_eq(4):row_eq(16) 
+    for i = col_eq(20):col_eq(22)
         JZ(j, i) = Jz((j-1)*dy);
     end
-    for i = col_eq(14):col_eq(16)-1 
+    for i = col_eq(14):col_eq(16) 
         JZ(j, i) = -Jz((j-1)*dy);  
     end
 end
@@ -173,12 +173,14 @@ grid()
 %% Força
 
 Fela_x = 1/(2*mi0)*(...
-    trapz(-0.1:dx:0.1, Bx(:, col_eq(4)).^2 - By(:, col_eq(4)).^2) );
+    trapz(-0.1:dx:0.1, Bx(:, col_eq(4)-1).^2 - By(:, col_eq(4)-1).^2) );
 
 Fela_y = 1/(2*mi0)*(...
-    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)).*By(:, col_eq(4))) );
+    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)-1).*By(:, col_eq(4)-1)) );
+
 
 fprintf('A força Fx = %8.4f \n',Fela_x);
 fprintf('A força Fy = %8.4f \n',Fela_y);
+
 
 

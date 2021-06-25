@@ -120,7 +120,7 @@ for j = 2:rows-1
        pos_y = (j-1)*dy;
        
        % Se está embaixo ou em cima da bobina externa, pula
-       if (pos_x >= 0.20 && pos_x <= 0.04 && pos_x >= 0.16)
+       if (pos_x >= 0.20 && pos_y <= 0.04 && pos_y >= 0.16)
            continue;
            
        % Parte interna
@@ -161,10 +161,10 @@ grid()
 %% Força
 
 Fela_x = 1/(2*mi0)*(...
-    trapz(-0.1:dx:0.1, Bx(:, col_eq(4)-1).^2 - By(:, col_eq(4)-1).^2) );
+    trapz(-0.1:dx:0.1, Bx(:, col_eq(4)).^2 - By(:, col_eq(4)).^2) );
 
 Fela_y = 1/(2*mi0)*(...
-    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)-1).*By(:, col_eq(4)-1)) );
+    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)).*By(:, col_eq(4))) );
 
 
 fprintf('A força Fx = %8.4f \n',Fela_x);

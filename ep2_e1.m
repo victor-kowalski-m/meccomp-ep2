@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais para o item e)
-[dx, dy] = deal(0.001); % passos em metros
+[dx, dy] = deal(0.0025); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -19,7 +19,7 @@ fim_bobina = [row_eq(16) col_eq(22)]; % linha e coluna finais da bobina
 
 % Define matriz de permeabilidade magnética no domínio
 mi0 = 4*pi*10^-7; % permeabilidade magnética do vacuo, do ar e da bobina
-miferrox = 2500*mi0; %1200*mi0; % permeabilidade magnética do ferro em x
+miferrox = 1200*mi0; % permeabilidade magnética do ferro em x
 miferroy = 2500*mi0; % permeabilidade magnética do ferro em y
 [MIx,MIy] = deal(ones(rows, cols)*mi0);
 MIx(:, col_eq(0):col_eq(4)-1) = miferrox;
@@ -109,9 +109,11 @@ while erro_max > tolerancia && iters < limite_iters
             A(j, i) = lambda*Acalc + (1-lambda)*Aold(j, i);
 
             % Calcula erro no ponto e substitui o erro máximo se for maior
-            erro = abs((A(j, i) - Aold(j, i))/A(j, i));
-            if erro > erro_max
-                erro_max = erro;
+            if A(j, i) ~= 0  
+                erro = abs((A(j, i) - Aold(j, i))/A(j, i));
+                    if erro > erro_max
+                        erro_max = erro;
+                    end
             end
                   
         end
@@ -132,7 +134,7 @@ for j = 2:rows-1
        pos_y = (j-1)*dy;
        
        % Se está embaixo ou em cima da bobina externa, pula
-       if (pos_x >= 0.20 && pos_x <= 0.04 && pos_x >= 0.16)
+       if (pos_x >= 0.20 && pos_y <= 0.04 && pos_y >= 0.16)
            continue;
            
        % Parte interna
@@ -173,10 +175,10 @@ grid()
 %% Força
 
 Fela_x = 1/(2*mi0)*(...
-    trapz(-0.1:dx:0.1, Bx(:, col_eq(4)-1).^2 - By(:, col_eq(4)-1).^2) );
+    trapz(-0.1:dx:0.1, Bx(:, col_eq(4)).^2 - By(:, col_eq(4)).^2) );
 
 Fela_y = 1/(2*mi0)*(...
-    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)-1).*By(:, col_eq(4)-1)) );
+    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)-1).*By(:, col_eq(4))) );
 
 
 fprintf('A força Fx = %8.4f \n',Fela_x);

@@ -13,13 +13,9 @@ A = zeros(rows, cols); % matriz inicial com zeros
 col_eq = @(x) x/22*(cols-1)+1; 
 row_eq = @(y) y/20*(rows-1)+1;
 
-% Pontos de início de fim da bobina externa
-ini_bobina = [row_eq(4) col_eq(20)]; % linha e coluna iniciais da bobina
-fim_bobina = [row_eq(16) col_eq(22)]; % linha e coluna finais da bobina
-
 % Define matriz de permeabilidade magnética no domínio
 mi0 = 4*pi*10^-7; % permeabilidade magnética do vacuo, do ar e da bobina
-miferrox = 1200*mi0; % permeabilidade magnética do ferro em x
+miferrox = 1200*mi0; % 1200 permeabilidade magnética do ferro em x
 miferroy = 2500*mi0; % permeabilidade magnética do ferro em y
 [MIx,MIy] = deal(ones(rows, cols)*mi0);
 MIx(:, col_eq(0):col_eq(4)-1) = miferrox;
@@ -42,6 +38,17 @@ for j=row_eq(4):row_eq(16)
         JZ(j, i) = -Jz((j-1)*dy);  
     end
 end
+
+% Define fronteiras do domínio: 0 interior, 1 vertical, 2 horizontal
+vertical = 1;
+horizontal = 2;
+vazio_direita = 3;
+Fronteiras = zeros(rows, cols);
+Fronteiras(2:end-1, col_eq(4)) = vertical;
+Fronteiras([2:row_eq(4) row_eq(16):end-1], col_eq(5)) = vertical;
+Fronteiras(row_eq(4):row_eq(16), [col_eq(16) col_eq(20)]) = vertical;
+Fronteiras([row_eq(4) row_eq(16)], col_eq(5):col_eq(16)) = horizontal;
+Fronteiras([2:row_eq(4) row_eq(16):end-1], col_eq(20):col_eq(22)-1) = vazio_direita;
 
 %% Funções auxiliares para cálculo de Aij
 
@@ -86,17 +93,17 @@ while erro_max > tolerancia && iters < limite_iters
     for j=2:rows-1
         for i=2:cols-1
                        
-            % Se está embaixo ou em cima da bobina externa, pula
-            if i >= ini_bobina(2) && (j <= ini_bobina(1) || j >= fim_bobina(1))
-                continue;
+            % Se está embaixo ou em cima da bobina externa, pula linha
+            if Fronteiras(j, i) == vazio_direita
+                break;
             end
             
             % Escolhe qual equação de Aij utilizar
-            if MIx(j, i-1) ~= MIx(j, i+1) % se é fronteira vertical
+            if Fronteiras(j, i) == vertical % se é fronteira vertical
                 Acalc = Aij_2mis_front_vert(A, j, i, ...
                     MIx(j,i-1), MIy(j,i-1), JZ(j,i-1), ...
                     MIx(j,i+1), MIy(j,i+1), JZ(j,i+1));
-            elseif MIx(j-1,i) ~= MIx(j+1,i) % se é fronteira horizontal
+            elseif Fronteiras(j, i) == horizontal % se é fronteira horizontal
                 Acalc = Aij_2mis_front_hori(A, j, i, ...
                     MIx(j-1,i), MIy(j-1,i), JZ(j-1,i), ...
                     MIx(j+1,i), MIy(j+1,i), JZ(j+1,i));
@@ -130,19 +137,13 @@ end
 for j = 2:rows-1
    for i = 2:cols-1
        
-       pos_x = (i-1)*dx;
-       pos_y = (j-1)*dy;
-       
-       % Se está embaixo ou em cima da bobina externa, pula
-       if (pos_x >= 0.20 && pos_y <= 0.04 && pos_y >= 0.16)
-           continue;
+        % Se está embaixo ou em cima da bobina externa, pula linha
+        if Fronteiras(j, i) == vazio_direita
+            break;
+        end
            
-       % Parte interna
-       else
-           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
-           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dx);
-       end
-       
+       Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+       By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dx);
        Hx(j,i) = Bx(j,i)/MIx(j,i);
        Hy(j,i) = By(j,i)/MIy(j,i);
        
@@ -178,7 +179,7 @@ Fela_x = 1/(2*mi0)*(...
     trapz(-0.1:dx:0.1, Bx(:, col_eq(4)).^2 - By(:, col_eq(4)).^2) );
 
 Fela_y = 1/(2*mi0)*(...
-    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)-1).*By(:, col_eq(4))) );
+    trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)).*By(:, col_eq(4))) );
 
 
 fprintf('A força Fx = %8.4f \n',Fela_x);

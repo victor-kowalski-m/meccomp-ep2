@@ -13,54 +13,60 @@ A0 = zeros(rows, cols); % matriz inicial com zeros
 col_eq = @(x) x/22*(cols-1)+1; 
 row_eq = @(y) y/20*(rows-1)+1;
 
-% Pontos de início de fim da bobina externa
-ini_bobina = [row_eq(4) col_eq(20)]; % linha e coluna iniciais da bobina
-fim_bobina = [row_eq(16) col_eq(22)]; % linha e coluna finais da bobina
-
 % Define matriz de permeabilidade magnética no domínio
 mi0 = 4*pi*10^-7; % permeabilidade magnética do vacuo, do ar e da bobina
 miferrox = 1200*mi0; % permeabilidade magnética do ferro em x
 miferroy = 2500*mi0; % permeabilidade magnética do ferro em y
 [MIx,MIy] = deal(ones(rows, cols)*mi0);
-MIx(:, col_eq(0):col_eq(4)) = miferrox;
-MIx(:, col_eq(16):col_eq(20)) = miferrox;
-MIx(row_eq(0):row_eq(4), col_eq(5):col_eq(20)) = miferrox;
-MIx(row_eq(16):row_eq(20), col_eq(5):col_eq(20)) = miferrox;
-MIy(:, col_eq(0):col_eq(4)) = miferroy;
-MIy(:, col_eq(16):col_eq(20)) = miferroy;
-MIy(row_eq(0):row_eq(4), col_eq(5):col_eq(20)) = miferroy;
-MIy(row_eq(16):row_eq(20), col_eq(5):col_eq(20)) = miferroy;
+MIx(:, col_eq(0):col_eq(4)-1) = miferrox;
+MIx(:, col_eq(16)+1:col_eq(20)-1) = miferrox;
+MIx(row_eq(0):row_eq(4)-1, col_eq(5)+1:col_eq(20)-1) = miferrox;
+MIx(row_eq(16)+1:row_eq(20), col_eq(5)+1:col_eq(20)-1) = miferrox;
+MIy(:, col_eq(0):col_eq(4)-1) = miferroy;
+MIy(:, col_eq(16)+1:col_eq(20)-1) = miferroy;
+MIy(row_eq(0):row_eq(4)-1, col_eq(5)+1:col_eq(20)-1) = miferroy;
+MIy(row_eq(16)+1:row_eq(20), col_eq(5)+1:col_eq(20)-1) = miferroy;
 
 % Define matriz de e densidade superficial de corrente elétrica no domínio
-JZ = zeros(rows, cols);
+[JZ, Sigma] = deal(zeros(rows, cols));
 Jz = @(y) (2*10^6*cos(pi*(y-0.1)/(12*10^-2)) + 8*10^5);
-for j=row_eq(4)+1:row_eq(16)-1 
-    for i = col_eq(20)+1:col_eq(22)
+sigma = 4*10^6;
+for j=row_eq(4):row_eq(16) 
+    for i = col_eq(20):col_eq(22)
         JZ(j, i) = Jz((j-1)*dy);
+        Sigma(j, i) = sigma;
     end
-    for i = col_eq(14):col_eq(16)-1 
-        JZ(j, i) = -Jz((j-1)*dy);  
+    for i = col_eq(14):col_eq(16) 
+        JZ(j, i) = -Jz((j-1)*dy);
+        Sigma(j, i) = sigma;
     end
 end
+
+% Define fronteiras do domínio: 0 interior, 1 vertical, 2 horizontal
+vertical = 1;
+horizontal = 2;
+vazio_direita = 3;
+Fronteiras = zeros(rows, cols);
+Fronteiras(2:end-1, col_eq(4)) = vertical;
+Fronteiras([2:row_eq(4) row_eq(16):end-1], col_eq(5)) = vertical;
+Fronteiras(row_eq(4):row_eq(16), [col_eq(16) col_eq(20)]) = vertical;
+Fronteiras([row_eq(4) row_eq(16)], col_eq(5):col_eq(16)) = horizontal;
+Fronteiras([2:row_eq(4) row_eq(16):end-1], col_eq(20):col_eq(22)-1) = vazio_direita;
 
 %% Funções auxiliares para cálculo de Aij
 
 dx2 = dx^2;
-sigma = 4*10^6;
 dt = 0.0001; % Passo no tempo
-lenT = 100; % Número de passos
-T = 0:dt:(lenT-1)*dt; % Vetor de tempos
-A = repmat(A0,[1 1 lenT]); % Matriz inicial de valores de A no tempo
 
 % Função de cálculo de Aij com mi diferente em x e y em um ponto no interior do domínio
-Aijkmais1_interior = @(A, j, i, k, t, mix, miy, Jz)...
+Aijkmais1_interior = @(A, j, i, k, t, mix, miy, Jz, sigma)...
     (dx.^(-2).*mix.^(-1).*miy.^(-1).*sigma.^(-1).*(dt.*miy.* ...
     (A(j-1,i,k)+(-2).*A(j,i,k)+A(j+1,i,k))+mix.* ...
     (dt.*(A(j,i-1,k)+(-2).*A(j,i,k)+A(j,i+1,k))+dx2.*miy.* ...
     (sigma.*A(j,i,k)+dt.*Jz.*cos(60.*t)))));
 
 % Função de cálculo de Aij com mi diferente em x e y na fronteira vertical entre dois meios
-Aijkmais1_front_vert = @(A, j, i, k, t, mix1, miy1, Jz1, mix2, miy2, Jz2)...
+Aijkmais1_front_vert = @(A, j, i, k, t, mix1, miy1, Jz1, mix2, miy2, Jz2, sigma1, sigma2)...
     ((1/2).*dx.^(-2).*mix1.^(-1).*mix2.^(-1).*miy1.^(-1).* ...
     miy2.^(-1).*sigma.^(-1).*((-2).*(dt.*mix2.*miy1.*miy2+mix1.* ...
     (dt.*miy1.*miy2+mix2.*(dt.*miy2+miy1.*(dt+(-1).*dx2.*miy2.*sigma)))).* ...
@@ -70,7 +76,7 @@ Aijkmais1_front_vert = @(A, j, i, k, t, mix1, miy1, Jz1, mix2, miy2, Jz2)...
     (Jz1+Jz2).*mix1.*mix2.*cos(60.*t))))));
 
 % Função de cálculo de Aij com mi diferente em x e y na fronteira horizontal entre dois meios
-Aijkmais1_front_hori = @(A, j, i, k, t, mix1, miy1, Jz1, mix2, miy2, Jz2) ...
+Aijkmais1_front_hori = @(A, j, i, k, t, mix1, miy1, Jz1, mix2, miy2, Jz2, sigma1, sigma2) ...
     ((1/2).*dx.^(-2).*mix1.^(-1).*mix2.^(-1).*miy1.^(-1).* ...
     miy2.^(-1).*sigma.^(-1).*(dt.*mix1.*mix2.*(miy1+miy2).* ...
     A(j,i-1,k)+(-2).*(dt.*mix2.*miy1.*miy2+mix1.* ...
@@ -82,39 +88,44 @@ Aijkmais1_front_hori = @(A, j, i, k, t, mix1, miy1, Jz1, mix2, miy2, Jz2) ...
  
 %% Aplicação do MDF
 
+lenT = 100; % Número de passos
+T = 0:dt:(lenT-1)*dt; % Vetor de tempos
+A = repmat(A0,[1 1 lenT]); % Matriz inicial de valores de A no tempo
+
+rows_bobina = row_eq(4):row_eq(16);
+cols_bobina = [col_eq(14):col_eq(16) col_eq(20):col_eq(22)];
+
 for k = 1:lenT - 1
         
-    % Itera matriz por linha e coluna
-    for j=2:rows-1
-        for i=2:cols-1
-                       
-            % Se está embaixo ou em cima da bobina externa, pula
-            if i >= ini_bobina(2) && (j <= ini_bobina(1) || j >= fim_bobina(1))
-                continue;
-            end
-            
+    % Itera bobina por linha e coluna
+    for j=rows_bobina 
+        for i=cols_bobina
+                                   
             % Escolhe qual equação de Aij utilizar
             if MIx(j, i-1) ~= MIx(j, i+1) % se é fronteira vertical
                 A(j, i, k+1) = Aijkmais1_front_vert( ...
                     A, j, i, k, T(k), ...
                     MIx(j, i-1), MIy(j, i-1), JZ(j,i-1), ...
-                    MIx(j, i+1), MIy(j, i+1), JZ(j,i+1));
+                    MIx(j, i+1), MIy(j, i+1), JZ(j,i+1), sigma1, sigma2);
                 
             elseif MIx(j-1,i) ~= MIx(j+1,i) % se é fronteira horizontal
                 A(j, i, k+1) = Aijkmais1_front_hori( ...
                     A, j, i, k, T(k), ...
                     MIx(j, i-1), MIy(j, i-1), JZ(j,i-1), ...
-                    MIx(j, i+1), MIy(j, i+1), JZ(j,i+1));
+                    MIx(j, i+1), MIy(j, i+1), JZ(j,i+1), sigma1, sigma2);
                 
             else % se estiver em um ponto interior do domínio
                 A(j, i, k+1) = Aijkmais1_interior( ...
                     A, j, i, k, T(k), ...
-                    MIx(j, i), MIy(j, i), JZ(j, i));
+                    MIx(j, i), MIy(j, i), JZ(j, i), sigma1, sigma2);
                     
             end                                    
                               
         end
     end
+    
+    % Itera pontos fora da bobina
+    
     
 end
 

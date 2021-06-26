@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.0025); % passos em metros
+[dx, dy] = deal(0.001); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -12,10 +12,6 @@ A = zeros(rows, cols); % matriz inicial com zeros
 % Funções para calcular os pontos da malha equivalentes a x e y no desenho
 col_eq = @(x) x/22*(cols-1)+1; 
 row_eq = @(y) y/20*(rows-1)+1;
-
-% Pontos de início de fim da bobina externa
-ini_bobina = [row_eq(4) col_eq(20)]; % linha e coluna iniciais da bobina
-fim_bobina = [row_eq(16) col_eq(22)]; % linha e coluna finais da bobina
 
 % Define matriz de permeabilidade magnética no domínio
 mi0 = 4*pi*10^-7; % permeabilidade magnética do vacuo, do ar e da bobina
@@ -37,6 +33,17 @@ for j=row_eq(4):row_eq(16)
         JZ(j, i) = -Jz((j-1)*dy);  
     end
 end
+
+% Define fronteiras do domínio: 0 interior, 1 vertical, 2 horizontal
+vertical = 1;
+horizontal = 2;
+vazio_direita = 3;
+Fronteiras = zeros(rows, cols);
+Fronteiras(2:end-1, col_eq(4)) = vertical;
+Fronteiras([2:row_eq(4) row_eq(16):end-1], col_eq(5)) = vertical;
+Fronteiras(row_eq(4):row_eq(16), [col_eq(16) col_eq(20)]) = vertical;
+Fronteiras([row_eq(4) row_eq(16)], col_eq(5):col_eq(16)) = horizontal;
+Fronteiras([2:row_eq(4) row_eq(16):end-1], col_eq(20):col_eq(22)-1) = vazio_direita;
 
 %% Funções auxiliares para cálculo de Aij
 
@@ -77,16 +84,16 @@ while erro_max > tolerancia && iters < limite_iters
     for j=2:rows-1
         for i=2:cols-1
                        
-            % Se está embaixo ou em cima da bobina externa, pula
-            if i >= ini_bobina(2) && (j <= ini_bobina(1) || j >= fim_bobina(1))
-                continue;
+            % Se está embaixo ou em cima da bobina externa, pula linha
+            if Fronteiras(j, i) == vazio_direita
+                break;
             end
             
             % Escolhe qual equação de Aij utilizar
-            if MI(j, i-1) ~= MI(j, i+1) % se é fronteira vertical
+            if Fronteiras(j, i) == vertical % se é fronteira vertical
                 Acalc = Aij_front_vert(A, j, i, ...
                     MI(j,i-1), JZ(j,i-1), MI(j,i+1), JZ(j,i+1));
-            elseif MI(j-1,i) ~= MI(j+1,i) % se é fronteira horizontal
+            elseif Fronteiras(j, i) == horizontal % se é fronteira horizontal
                 Acalc = Aij_front_hori(A, j, i, ...
                     MI(j-1,i), JZ(j-1,i), MI(j+1,i), JZ(j+1,i));
             else % se estiver em um ponto interior do domínio
@@ -116,21 +123,15 @@ end
 for j = 2:rows-1
    for i = 2:cols-1
        
-       pos_x = (i-1)*dx;
-       pos_y = (j-1)*dy;
-       
-       % Se está embaixo ou em cima da bobina externa, pula
-       if (pos_x >= 0.20 && pos_y <= 0.04 && pos_y >= 0.16)
-           continue;
-           
-       % Parte interna
-       else
-           Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
-           By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
-       end
-       
-       Hx(j,i) = Bx(j,i)/MI(j,i);
-       Hy(j,i) = By(j,i)/MI(j,i);
+        % Se está embaixo ou em cima da bobina externa, pula linha
+        if Fronteiras(j, i) == vazio_direita
+            break;
+        end
+
+        Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+        By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+        Hx(j,i) = Bx(j,i)/MI(j,i);
+        Hy(j,i) = By(j,i)/MI(j,i);
        
    end
 end

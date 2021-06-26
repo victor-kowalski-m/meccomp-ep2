@@ -14,8 +14,8 @@ function ...
     cols = 0.22/dx + 1; % numero de colunas da matriz
 
     % Funções para calcular os pontos da malha equivalentes a x e y no desenho
-    col_eq = @(x) x/22*(cols-1)+1; 
-    row_eq = @(y) y/20*(rows-1)+1;
+    col_eq = @(x) round(x/22*(cols-1)+1); 
+    row_eq = @(y) round(y/20*(rows-1)+1);
     
     A = zeros(rows, cols); % matriz inicial com zeros
     

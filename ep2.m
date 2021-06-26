@@ -3,7 +3,7 @@ clc
 close all
 
 %% Parâmetros iniciais
-[dx, dy] = deal(0.001); % passos em metros
+[dx, dy] = deal(0.0025); % passos em metros
 
 rows = 0.20/dy + 1; % numero de linhas da matriz
 cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -17,19 +17,19 @@ row_eq = @(y) y/20*(rows-1)+1;
 mi0 = 4*pi*10^-7; % permeabilidade magnética do vacuo, do ar e da bobina
 miferro = 2500*mi0; % permeabilidade magnética do ferro
 MI = ones(rows, cols)*mi0;
-MI(:, col_eq(0):col_eq(4)-1) = miferro;
-MI(:, col_eq(16)+1:col_eq(20)-1) = miferro;
-MI(row_eq(0):row_eq(4)-1, col_eq(5)+1:col_eq(20)-1) = miferro;
-MI(row_eq(16)+1:row_eq(20), col_eq(5)+1:col_eq(20)-1) = miferro;
+MI(:, col_eq(0):col_eq(4)) = miferro;
+MI(:, col_eq(16):col_eq(20)) = miferro;
+MI(row_eq(0):row_eq(4), col_eq(5):col_eq(20)) = miferro;
+MI(row_eq(16):row_eq(20), col_eq(5):col_eq(20)) = miferro;
 
 % Define matriz de e densidade superficial de corrente elétrica no domínio
 JZ = zeros(rows, cols);
 Jz = @(y) (2*10^6*cos(pi*(y-0.1)/(12*10^-2)) + 8*10^5);
-for j=row_eq(4):row_eq(16) 
-    for i = col_eq(20):col_eq(22)
+for j=row_eq(4)+1:row_eq(16)-1 
+    for i = col_eq(20)+1:col_eq(22)-1
         JZ(j, i) = Jz((j-1)*dy);
     end
-    for i = col_eq(14):col_eq(16) 
+    for i = col_eq(14)+1:col_eq(16)-1 
         JZ(j, i) = -Jz((j-1)*dy);  
     end
 end
@@ -104,11 +104,13 @@ while erro_max > tolerancia && iters < limite_iters
             A(j, i) = lambda*Acalc + (1-lambda)*Aold(j, i);
 
             % Calcula erro no ponto e substitui o erro máximo se for maior
-            erro = abs((A(j, i) - Aold(j, i))/A(j, i));
-            if erro > erro_max
-                erro_max = erro;
+            if A(j, i) ~= 0  
+                erro = abs((A(j, i) - Aold(j, i))/A(j, i));
+                if erro > erro_max
+                    erro_max = erro;
+                end
             end
-                  
+            
         end
     end
     
@@ -123,15 +125,15 @@ end
 for j = 2:rows-1
    for i = 2:cols-1
        
-        % Se está embaixo ou em cima da bobina externa, pula linha
-        if Fronteiras(j, i) == vazio_direita
-            break;
-        end
+     % Se está embaixo ou em cima da bobina externa, pula linha
+    if Fronteiras(j, i) == vazio_direita
+        break;
+    end
 
-        Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
-        By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
-        Hx(j,i) = Bx(j,i)/MI(j,i);
-        Hy(j,i) = By(j,i)/MI(j,i);
+    Bx(j,i) = (A(j+1,i) - A(j-1,i))/(2*dy);
+    By(j,i) = -(A(j,i+1) - A(j,i-1))/(2*dy);
+    Hx(j,i) = Bx(j,i)/MI(j,i);
+    Hy(j,i) = By(j,i)/MI(j,i);
        
    end
 end

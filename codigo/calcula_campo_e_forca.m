@@ -5,7 +5,6 @@ function [Bx, By, Hx, Hy, Fela_x, Fela_y]...
     % Inicialização das matrizes de densidade superficial de fluxo magnético e
     % intensidade de campo magnético
     [Bx, By, Hx, Hy] = deal(zeros(rows, cols, length(tempos)));
-    tempo = "";
 
     for idx=1:length(tempos)
         

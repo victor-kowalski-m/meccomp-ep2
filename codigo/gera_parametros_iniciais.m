@@ -45,7 +45,7 @@ function ...
     
     mi0 = 4*pi*10^-7; % permeabilidade magnética do vacuo, do ar e da bobina
     Sigma = 0;
-    tempos = [1];
+    tempos = 1;
     
     if item == "ad"
         miferro = 2500*mi0; % permeabilidade magnética do ferro

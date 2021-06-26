@@ -1,14 +1,14 @@
 function ...
-    [dx, dy, rows, cols, col_eq, row_eq, A, JZ, Fronteiras, ...
-     vertical, horizontal, vazio_direita, mi0, MIx, MIy, Sigma]...
-     = gera_parametros_iniciais(item, passo)
+    [dx, dy, rows, cols, col_eq, row_eq, A, JZ, Fronteiras, vertical, ...
+     horizontal, vazio_direita, mi0, MIx, MIy, Sigma, dt, tempos]...
+     = gera_parametros_iniciais(item, dx, dt)
     
     if ~any(item == ["ad" "e1" "e2"])
         disp("Item escolhido é inválido!")
         return
     end
  
-    [dx, dy] = deal(passo); % passos em metros
+    [dx, dy] = deal(dx); % passos em metros
 
     rows = 0.20/dy + 1; % numero de linhas da matriz
     cols = 0.22/dx + 1; % numero de colunas da matriz
@@ -45,6 +45,7 @@ function ...
     
     mi0 = 4*pi*10^-7; % permeabilidade magnética do vacuo, do ar e da bobina
     Sigma = 0;
+    tempos = [1];
     
     if item == "ad"
         miferro = 2500*mi0; % permeabilidade magnética do ferro
@@ -76,12 +77,13 @@ function ...
             
         elseif item == "e2"
             sigma = 4*10^6;
+            Sigma = zeros(rows, cols);
             Sigma(row_eq(4)+1:row_eq(16)-1,...
                 [col_eq(14)+1:col_eq(16)-1 col_eq(20)+1:col_eq(22)-1])...
                 = sigma;
             
-        end
+            tempos = [11 101 501];
+        end 
     end
- 
 end
 

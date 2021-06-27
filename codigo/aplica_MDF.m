@@ -93,7 +93,7 @@ function [A, iters] = ...
         cols_bobina = [col_eq(14):col_eq(16) col_eq(20):col_eq(22)-1];
         
         rows_esquerda = rows_bobina;
-        cols_esquerda = [col_eq(14)-1:-1:2 col_eq(20)-1:-1:col_eq(18)];
+        cols_esquerda = [col_eq(14):-1:2 col_eq(20):-1:col_eq(18)];
         
         rows_direita = rows_bobina;
         cols_direita = col_eq(16)+1:col_eq(18)-1;
@@ -120,6 +120,11 @@ function [A, iters] = ...
 
                     asda = 0;
                     
+                    % Se está embaixo ou em cima da bobina externa, pula linha
+                    if Fronteiras(j, i) == vazio_direita
+                        break;
+                    end
+                    
                     % Escolhe qual equação de Aij utilizar
                     if Fronteiras(j, i) == vertical % se é fronteira vertical
                         A(j, i, k+1) = Aij_vert_bobina( ...
@@ -131,9 +136,9 @@ function [A, iters] = ...
                     elseif Fronteiras(j, i) == horizontal % se é fronteira horizontal
                         A(j, i, k+1) = Aij_hori_bobina( ...
                             A, j, i, k, Tempo(k), ...
-                            MIx(j, i-1), MIy(j, i-1), JZ(j,i-1), ...
-                            MIx(j, i+1), MIy(j, i+1), JZ(j,i+1), ...
-                            Sigma(j, i-1), Sigma(j, i+1));
+                            MIx(j-1, i), MIy(j-1, i), JZ(j-1,i), ...
+                            MIx(j+1, i), MIy(j+1, i), JZ(j+1,i), ...
+                            Sigma(j-1, i-1), Sigma(j+1, i+1));
 
                     else % se estiver em um ponto interior do domínio
                         A(j, i, k+1) = Aij_int_bobina( ...
@@ -144,34 +149,34 @@ function [A, iters] = ...
                 end
             end
             
-            % Itera pontos à esquerda da(s) bobinas
-            for j=rows_esquerda 
-                for i=cols_esquerda
-                    
-                     % Escolhe qual equação de Aij utilizar
-                    if Fronteiras(j, i) == vertical % se é fronteira vertical
-                        A(j, i, k+1) = Aij_vert_esquerda( ...
-                            A, j, i, k, ...
-                            MIx(j, i-1), MIy(j, i-1), ...
-                            MIx(j, i+1), MIy(j, i+1));
-
-                    elseif Fronteiras(j, i) == horizontal % se é fronteira horizontal
-                        A(j, i, k+1) = Aij_hori_esquerda( ...
-                            A, j, i, k, ...
-                            MIx(j, i-1), MIy(j, i-1), ...
-                            MIx(j, i+1), MIy(j, i+1));
-
-                    else % se estiver em um ponto interior do domínio
-                        A(j, i, k+1) = Aij_int_esquerda( ...
-                            A, j, i, k, ...
-                            MIx(j, i), MIy(j, i));
-                    end                                    
-                    
-                    Ak = A(:, :, k+1);
-                    asdas = 0;
-                    
-                end
-            end
+%             % Itera pontos à esquerda da(s) bobinas
+%             for j=rows_esquerda 
+%                 for i=cols_esquerda
+%                     
+%                      % Escolhe qual equação de Aij utilizar
+%                     if Fronteiras(j, i) == vertical % se é fronteira vertical
+%                         A(j, i, k+1) = Aij_vert_esquerda( ...
+%                             A, j, i, k, ...
+%                             MIx(j, i-1), MIy(j, i-1), ...
+%                             MIx(j, i+1), MIy(j, i+1));
+% 
+%                     elseif Fronteiras(j, i) == horizontal % se é fronteira horizontal
+%                         A(j, i, k+1) = Aij_hori_esquerda( ...
+%                             A, j, i, k, ...
+%                             MIx(j, i-1), MIy(j, i-1), ...
+%                             MIx(j, i+1), MIy(j, i+1));
+% 
+%                     else % se estiver em um ponto interior do domínio
+%                         A(j, i, k+1) = Aij_int_esquerda( ...
+%                             A, j, i, k, ...
+%                             MIx(j, i), MIy(j, i));
+%                     end                                    
+%                     
+%                     Ak = A(:, :, k+1);
+%                     asdas = 0;
+%                     
+%                 end
+%             end
             
 %             % Itera pontos à direita da(s) bobinas
 %             for j=rows_direita 

@@ -10,7 +10,7 @@ dx = 0.0025;
 dt_min = 2.5*dx^2;
 [dx, dy, rows, cols, row_eq, col_eq, A, JZ, Fronteiras, vertical, ...
     horizontal, vazio_direita, mi0, MIx, MIy, Sigma, dt, tempos]...
-     = gera_parametros_iniciais(item, dx, dx*dt_min);
+     = gera_parametros_iniciais(item, dx, dt_min);
 
 %% Funções auxiliares para cálculo de Aij
 equacoes = gera_equacoes(item, dx, dt);

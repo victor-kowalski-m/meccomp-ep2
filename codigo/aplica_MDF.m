@@ -131,24 +131,16 @@ function [A, iter] = ...
             Ak = A(:, :, k+1);
             
             for j=2:rows-1
-                for i=2:col_eq(20)
+                for i=2:col_eq(20)-1
 
-                    % Se está embaixo ou em cima da bobina externa, pula linha
-                    if Fronteiras(j, i) == vazio_direita
-                        break;
-                    end
-                    
+                    % Se for um ponto da bobina pula 
                     if i >= col_eq(14) && i <= col_eq(16) && ...
                         j >= row_eq(4) && j <= row_eq(16) && ...
                         ~(any([row_eq(4) row_eq(16)] == j) && ...
                             any([col_eq(14) col_eq(16) col_eq(20)] == i))
                         continue
                     end
-                   
-                    if i == col_eq(20)
-                        aasdasd = 0;
-                    end
-                    
+                                       
                     % Escolhe qual equação de Aij utilizar
                     if Fronteiras(j, i) == vertical % se é fronteira vertical
                         Acalc = Aij_vert_fora(A, j, i, k, t,...

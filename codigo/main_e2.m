@@ -84,29 +84,14 @@ Aij_int_fora = equacoes{4};
 Aij_vert_fora = equacoes{5};
 Aij_hori_fora = equacoes{6};
 
-
 instantes = tempos(end)-1;
 Tempo = 0:dt:instantes*dt; % Vetor de tempos
 A = repmat(A,[1 1 instantes+1]); % Matriz inicial de valores de A no tempo
 
-rows_bobina = row_eq(4):row_eq(16);
-cols_bobina = [col_eq(14):col_eq(16) col_eq(20):col_eq(22)-1];
-
-rows_esquerda = rows_bobina;
-cols_esquerda = [col_eq(14):-1:3 col_eq(20):-1:col_eq(18)+1];
-
-rows_direita = rows_bobina;
-cols_direita = col_eq(16):col_eq(18)-2;
-
-rows_acima = row_eq(16):row_eq(20)-2;
-cols_acima = cols_bobina;
-
-rows_abaixo = row_eq(4):-1:3;
-cols_abaixo = cols_bobina;
-
+rows_bobina = row_eq(4)+1:row_eq(16)-1;
+cols_bobina = [col_eq(14)+1:col_eq(16)-1 col_eq(20)+1:col_eq(22)-1];
 
 iters = 0; % contador de iteracoes
-
 
 for k = 1:instantes
             
@@ -157,13 +142,16 @@ for k = 1:instantes
         for i=2:cols-1
 
             % Se está embaixo ou em cima da bobina externa, pula linha
-            if (Fronteiras(j, i) == vazio_direita) || ...
-                    ((j >= row_eq(4) && j <= row_eq(16)) && ...
-                    ((i >= col_eq(14) && i <= col_eq(16)) || ...
-                    (i >= col_eq(20) && i <= col_eq(22))))
+            if (Fronteiras(j, i) == vazio_direita)
                 break;
             end
-
+            
+            if ((j > row_eq(4) && j < row_eq(16)) && ...
+                ((i > col_eq(14) && i < col_eq(16)) || ...
+                (i > col_eq(20) && i < col_eq(22))))
+                continue;
+            end
+                        
             % Escolhe qual equação de Aij utilizar
             if Fronteiras(j, i) == vertical % se é fronteira vertical
                 Acalc = Aij_vert_fora(A, j, i, k, ...
@@ -180,6 +168,11 @@ for k = 1:instantes
 
             % Calcula valor novo de A no ponto por Liebmann
             A(j, i, k+1) = lambda*Acalc + (1-lambda)*Aold(j, i, k);
+            
+            if i == col_eq(18)
+                asda = A(j, i, k+1);
+                xasd=0;
+            end
 
         end
     end

@@ -12,7 +12,7 @@ function [] = plota(A, dx, dy, Bx, By, Hx, Hy, tempos)
         
         % Plot de Az
         figure("Name", "Az" + tempo);
-        surf(X,Y,A(:, :, tempos(k)), 'LineStyle', ':')
+        surf(X,Y,A(:, :, idx), 'LineStyle', ':')
         colorbar
         xlabel('x (m)')
         ylabel('y (m)')

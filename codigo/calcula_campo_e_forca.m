@@ -16,8 +16,8 @@ function [Bx, By, Hx, Hy, Fela_x, Fela_y]...
                     break;
                 end 
 
-               Bx(j,i,idx) = (A(j+1,i,tempos(idx)) - A(j-1,i,tempos(idx)))/(2*dy);
-               By(j,i,idx) = -(A(j,i+1,tempos(idx)) - A(j,i-1,tempos(idx)))/(2*dx);
+               Bx(j,i,idx) = (A(j-1,i,idx) - A(j-1,i,idx))/(2*dy);
+               By(j,i,idx) = -(A(j-1,i,idx) - A(j-1,i,idx))/(2*dx);
                Hx(j,i,idx) = Bx(j,i,idx)/MIx(j,i);
                Hy(j,i,idx) = By(j,i,idx)/MIy(j,i);
 

@@ -93,15 +93,15 @@ function [A, iters] = ...
         cols_bobina = [col_eq(14):col_eq(16) col_eq(20):col_eq(22)-1];
         
         rows_esquerda = rows_bobina;
-        cols_esquerda = [col_eq(14)-1:-1:2 col_eq(20)-1:-1:col_eq(18)];
+        cols_esquerda = [col_eq(14):-1:3 col_eq(20):-1:col_eq(18)+1];
         
         rows_direita = rows_bobina;
-        cols_direita = col_eq(16)+1:col_eq(18)-1;
+        cols_direita = col_eq(16):col_eq(18)-2;
         
-        rows_acima = row_eq(16)+1:row_eq(20)-1;
+        rows_acima = row_eq(16):row_eq(20)-2;
         cols_acima = cols_bobina;
         
-        rows_abaixo = row_eq(4)-1:-1:2;
+        rows_abaixo = row_eq(4):-1:3;
         cols_abaixo = cols_bobina;
         
         

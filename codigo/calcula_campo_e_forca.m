@@ -25,10 +25,10 @@ function [Bx, By, Hx, Hy, Fela_x, Fela_y]...
         end
 
         Fela_x = 1/(2*mi0)*(...
-        trapz(-0.1:dx:0.1, Bx(:, col_eq(4)).^2 - By(:, col_eq(4)).^2) );
+        trapz(-0.1:dx:0.1, Bx(:, col_eq(4), idx).^2 - By(:, col_eq(4), idx).^2) );
 
         Fela_y = 1/(2*mi0)*(...
-            trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4)).*By(:, col_eq(4))) );
+            trapz(-0.1:dx:0.1, 2*Bx(:, col_eq(4), idx).*By(:, col_eq(4), idx)) );
 
         if length(tempos) > 1
             disp("Tempo " + (tempos(idx)-1) + " dt: ");

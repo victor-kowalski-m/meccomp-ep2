@@ -83,7 +83,7 @@ function ...
                 [col_eq(14):col_eq(16) col_eq(20):col_eq(22)])...
                 = sigma;
             
-            tempos = [11 101 501];
+            tempos = [11 101 20001];
         end 
     end
 end

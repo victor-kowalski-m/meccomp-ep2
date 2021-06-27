@@ -6,7 +6,7 @@ close all
 item = "e2"; % "ad", "e1" ou "e2"
 
 %% Parâmetros iniciais
-dx = 0.0025;
+dx = 0.001;
 dt_min = dx^2;
 [dx, dy, rows, cols, row_eq, col_eq, A, JZ, Fronteiras, vertical, ...
     horizontal, vazio_direita, mi0, MIx, MIy, Sigma, dt, tempos]...

@@ -3,8 +3,10 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
     vertical, horizontal, vazio_direita, equacoes, MIx, MIy, JZ, Sigma,...
     dt, tempos, mi0, dx, dy)
     
+    % Se é o item a-d ou e1, resolve por Liebmann
     if any(item == ["ad" "e1"])
         
+        % Nomeia as equações recebidas como argumento
         Aij_interior = equacoes{1};
         Aij_vert = equacoes{2};
         Aij_hori = equacoes{3};
@@ -15,8 +17,8 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
         iter = 0; % contador de iteracoes
         erro_max = inf; % erro inicial para entrar no loop
 
-        % Calcula A por liebmann até alcançar a tolerância desejada ou bater o
-        % limite de iterações
+        % Calcula A por liebmann até alcançar a tolerância desejada ou 
+        % bater o limite de iterações
         while erro_max > tolerancia && iter < limite_iters
 
             iter = iter + 1; % incrementa contador
@@ -32,7 +34,7 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
                         break;
                     end
 
-                    % Escolhe qual equação de Aij utilizar
+                    % Escolhe qual equação utilizar para calcular Aij
                     if Fronteiras(j, i) == vertical % se é fronteira vertical
                         Acalc = Aij_vert(A, j, i, ...
                         MIx(j,i-1), MIy(j,i-1), JZ(j,i-1), ...
@@ -54,25 +56,27 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
                         erro = abs((A(j, i) - Aold(j, i))/A(j, i));
                         if erro > erro_max
                             erro_max = erro;
-                        end
-                        
+                        end 
                     end
+                    
                 end
             end
         end
         
-        [k, printa] = deal(1);
+        % Calcula grandezas B, H e Fela com a matriz A encontrada
         [Bx, By, Hx, Hy, Fela_x, Fela_y]...
             = calcula_campo_e_forca(A, mi0, MIx, MIy, dx, dy, rows, cols, ...
-            col_eq, Fronteiras, vazio_direita, k, printa);
+            col_eq, Fronteiras, vazio_direita, 1, 1);
+        
     
+    % Se é o item e2, resolve usando método explícito na bobina 
     elseif item == "e2"
         
+        % Nomeia as equações recebidas como argumento
         % Equações na bobina
         Aij_int_bobina = equacoes{1};
         Aij_vert_bobina = equacoes{2};
         Aij_hori_bobina = equacoes{3};
-
         % Equações fora da bobina
         Aij_int_fora = equacoes{4};
         Aij_vert_fora = equacoes{5};
@@ -87,17 +91,21 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
         
         Atempos = repmat(A, [1 1 length(tempos)]); % Matriz que guardará A nos tempos desejados
         A = repmat(A, [1 1 2]); % Guarda o estado atual e anterior da matriz A
-        k = 1;
         
-        lambda = 1.75; % lambda de sobrerrelaxação
-        
+        % Matrizes que guardarão B e H nos tempos desejados
         [Bx, By, Hx, Hy] = deal(zeros(rows, cols, length(tempos)));
+        
+        % Vetores que guardarão Fela para todos os tempos
         [Fela_x, Fela_y] = deal(zeros(1, tempos(end)));
         
+        k = 1; % indice temporal de A, k antigo e k+1 atual 
+        lambda = 1.75; % lambda de sobrerrelaxação
+        
+        % Itera para cada tempo até o último tempo desejado
         for t=Tempo
             
-            A(: , :, k) = A(:, :, k+1);
-            iter = iter + 1;
+            A(: , :, k) = A(:, :, k+1); % Matriz atual da iteração anterior passa a ser a antiga
+            iter = iter + 1; % incrementa contador de iterações
             
             % Itera bobina por linha e coluna
             for j=rows_bobina 
@@ -108,26 +116,26 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
                         break;
                     end
                     
+                    % Se é um dos cantos da bobina, pula
                     if any([row_eq(4) row_eq(16)] == j) && ...
                             any([col_eq(14) col_eq(16) col_eq(20)] == i)
                         continue
                     end
                     
-                    % Escolhe qual equação de Aij utilizar
+                    % Escolhe qual equação de Aij (na bobina) utilizar
                     if Fronteiras(j, i) == vertical % se é fronteira vertical
                         A(j, i, k+1) = Aij_vert_bobina( ...
                             A, j, i, k, Tempo(k), ...
                             MIx(j, i-1), MIy(j, i-1), JZ(j,i-1), ...
                             MIx(j, i+1), MIy(j, i+1), JZ(j,i+1), ...
                             Sigma(j, i-1), Sigma(j, i+1));
-
                     elseif Fronteiras(j, i) == horizontal % se é fronteira horizontal
                         A(j, i, k+1) = Aij_hori_bobina( ...
                             A, j, i, k, Tempo(k), ...
                             MIx(j-1, i), MIy(j-1, i), JZ(j-1,i), ...
                             MIx(j+1, i), MIy(j+1, i), JZ(j+1,i), ...
                             Sigma(j-1, i), Sigma(j+1, i));
-                    else
+                    else % se é um ponto interior
                         A(j, i, k+1) = Aij_int_bobina( ...
                             A, j, i, k, t, ...
                             MIx(j, i), MIy(j, i), JZ(j, i), Sigma(j, i));                                   
@@ -135,13 +143,12 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
                         
                 end
             end
-             
-            Ak = A(:, :, k+1);
-            
+                      
+            % Itera pontos fora da bobina
             for j=2:rows-1
                 for i=2:col_eq(20)-1
 
-                    % Se for um ponto da bobina pula 
+                    % Se for um ponto da bobina pula (exceto cantos)
                     if i >= col_eq(14) && i <= col_eq(16) && ...
                         j >= row_eq(4) && j <= row_eq(16) && ...
                         ~(any([row_eq(4) row_eq(16)] == j) && ...
@@ -163,7 +170,7 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
                         MIx(j, i), MIy(j, i), JZ(j, i));
                     end                                   
 
-                    % Calcula valor novo de A no ponto por Liebmann
+                    % Calcula valor novo de A no ponto com sobrerrelaxação
                     A(j, i, k+1) = lambda*Acalc + (1-lambda)*A(j, i, k);
 
                 end
@@ -191,9 +198,8 @@ function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
             
         end
         
-        A = Atempos;
+        A = Atempos; % renomeia Atempos para A
         
-    end
-   
+    end  
 end
 

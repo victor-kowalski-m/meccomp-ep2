@@ -1,8 +1,9 @@
 function [equacoes] = gera_equacoes(item, dx, dt)
     
-    equacoes = cell(0);
-    dx2 = dx^2;
+    equacoes = cell(0); % vetor de células de armazenará as equações do item selecionado
+    dx2 = dx^2; % salva dx^2 com nome dx2
     
+    % Gera equações do item ad
     if item == "ad"
 
         % Aij em um ponto no interior do domínio
@@ -18,7 +19,8 @@ function [equacoes] = gera_equacoes(item, dx, dt)
         equacoes{end + 1} = @(A, j, i, mi1, ~, Jz1, mi2, ~, Jz2) ...
             (2*(mi2*A(j-1,i) + mi1*A(j+1,i)) + (mi1 + mi2)*(A(j,i-1) + A(j,i+1))...
             + (mi1*mi2*dx2)*(Jz1 + Jz2))/(4*(mi1 + mi2));
-        
+    
+    % Gera equações do item e1
     elseif item == "e1"
         % Aij um ponto no interior do domínio
         equacoes{end + 1} = @(A, j, i, mix, miy, Jz)...
@@ -38,10 +40,11 @@ function [equacoes] = gera_equacoes(item, dx, dt)
             (miy1+miy2))).^(-1).*(mix1.*mix2.*(miy1+miy2).*A(j,i-1)+...
             mix1.*mix2.*(miy1+miy2).*A(j,i+1)+miy1.*miy2.*...
             (mix2.*(dx2.*(Jz1+Jz2).*mix1+2.*A(j-1,i))+2.*mix1.*A(j+1,i))));
-                
+    
+    % Gera equações do item e2
     elseif item == "e2"
 
-        % Em pontos da bobina %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Em pontos da bobina
     
         % Aij em um ponto no interior da bobina
         equacoes{end + 1} = @(A, j, i, k, t, mix, miy, Jz, sigma)...
@@ -72,21 +75,21 @@ function [equacoes] = gera_equacoes(item, dx, dt)
             miy1.*miy2.*(2.*mix1.*A(1+j,i,k)+mix2.*(2.*A((-1)+j,i,k)+dx2.*( ...
             Jz1+Jz2).*mix1.*cos(60.*t))))));
     
-        % Em pontos fora da bobina %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Em pontos fora da bobina
         
-        % Aij um ponto no interior do domínio
+        % Aij um ponto no interior do domínio fora da bobina
         equacoes{end + 1} = @(A, j, i, k, t, mix, miy, Jz)...
             ((1/2).*(mix+miy).^(-1).*(dx2.*Jz.*mix.*miy+mix.*...
             (A(j,i-1, k+1)+A(j,i+1, k+1))+miy.*(A(j-1,i, k+1)+A(j+1,i, k+1))));
 
-        % Aij na fronteira vertical entre dois meios
+        % Aij na fronteira vertical entre dois meios fora da bobina
         equacoes{end + 1} = @(A, j, i, k, t, mix1, miy1, Jz1, mix2, miy2, Jz2)...
             ((1/2).*(mix2.*miy1.*miy2+mix1.*(miy1.*miy2+mix2.*...
             (miy1+miy2))).^(-1).*(2.*mix1.*mix2.*miy1.*A(j,i+1, k+1)+miy2.*...
             (2.*mix1.*mix2.*A(j,i-1, k+1)+miy1.*(dx2.*(Jz1+Jz2).*...
             mix1.*mix2+(mix1+mix2).*A(j-1,i, k+1)+(mix1+mix2).*A(j+1,i, k+1)))));
 
-        % Aij na fronteira horizontal entre dois meios
+        % Aij na fronteira horizontal entre dois meios fora da bobina
         equacoes{end + 1} = @(A, j, i, k, t, mix1, miy1, Jz1, mix2, miy2, Jz2) ...
             ((1/2).*(mix2.*miy1.*miy2+mix1.*(miy1.*miy2+mix2.*...
             (miy1+miy2))).^(-1).*(mix1.*mix2.*(miy1+miy2).*A(j,i-1, k+1)+...
@@ -95,6 +98,5 @@ function [equacoes] = gera_equacoes(item, dx, dt)
             +2.*mix1.*A(j+1,i, k+1))));
    
     end
-
 end
 

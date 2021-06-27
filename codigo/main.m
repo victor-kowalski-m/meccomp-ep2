@@ -6,7 +6,7 @@ close all
 item = "e2"; % "ad", "e1" ou "e2"
 
 %% Parâmetros iniciais
-dx = 0.0025; % passo na malha espacial
+dx = 0.001; % passo na malha espacial
 dt_min = dx^2; % dt mínimo calculado pelo criterio de estabilidade (com folga de 0.25)
 
 % Gera todos os parâmetros iniciais para o item escolhido

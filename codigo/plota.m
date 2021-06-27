@@ -1,4 +1,4 @@
-function [] = plota(A, dx, dy, Bx, By, Hx, Hy, tempos)
+function [] = plota(A, dx, dy, Bx, By, Hx, Hy, tempos, Fela_x, Fela_y, dt)
     
     [X,Y] = meshgrid(0:dx:0.22,-0.1:dy:0.1);
     tempo = "";
@@ -7,11 +7,11 @@ function [] = plota(A, dx, dy, Bx, By, Hx, Hy, tempos)
     for k=1:length(tempos)
         
         if length(tempos) > 1
-            tempo = " - tempo " + (tempos(k)-1) + " dt";
+            tempo = " " + (tempos(k)) + "dt";
         end
         
         % Plot de Az
-        figure("Name", "Az" + tempo);
+        figure("Name", "Az" + tempo, 'NumberTitle','off');
         surf(X,Y,A(:, :, idx), 'LineStyle', ':')
         colorbar
         xlabel('x (m)')
@@ -19,7 +19,7 @@ function [] = plota(A, dx, dy, Bx, By, Hx, Hy, tempos)
         zlabel('Az')
 
         % Plot de B
-        figure("Name", "B" + tempo);
+        figure("Name", "B" + tempo, 'NumberTitle','off');
         quiver(X,Y,Bx(:, :, idx),By(:, :, idx));
         axis equal
         xlabel("x(m)")
@@ -28,7 +28,7 @@ function [] = plota(A, dx, dy, Bx, By, Hx, Hy, tempos)
         grid()
 
         % Plot de H
-        figure("Name", "H" + tempo);
+        figure("Name", "H" + tempo, 'NumberTitle','off');
         quiver(X,Y,Hx(:, :, idx),Hy(:, :, idx));
         axis equal
         xlabel("x(m)")
@@ -38,6 +38,18 @@ function [] = plota(A, dx, dy, Bx, By, Hx, Hy, tempos)
     
         idx = idx + 1;
         
+    end
+    
+    if length(tempos) > 1
+        Tempo = 0:dt:tempos(end)*dt;
+        figure("Name", "Fela_x", 'NumberTitle','off');
+        plot(Tempo, Fela_x);
+        grid();
+        xlim([Tempo(1) Tempo(end)]);
+        figure("Name", "Fela_y", 'NumberTitle','off');
+        plot(Tempo, Fela_y);
+        grid();
+        xlim([Tempo(1) Tempo(end)]);
     end
         
 end

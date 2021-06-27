@@ -1,6 +1,7 @@
-function [A, iter] = ...
+function [A, iter, Bx, By, Hx, Hy, Fela_x, Fela_y] = ...
     aplica_MDF(item, A, rows, cols, row_eq, col_eq, Fronteiras, ...
-    vertical, horizontal, vazio_direita, equacoes, MIx, MIy, JZ, Sigma, dt, tempos)
+    vertical, horizontal, vazio_direita, equacoes, MIx, MIy, JZ, Sigma,...
+    dt, tempos, mi0, dx, dy)
     
     if any(item == ["ad" "e1"])
         
@@ -59,6 +60,11 @@ function [A, iter] = ...
                 end
             end
         end
+        
+        [k, printa] = deal(1);
+        [Bx, By, Hx, Hy, Fela_x, Fela_y]...
+            = calcula_campo_e_forca(A, mi0, MIx, MIy, dx, dy, rows, cols, ...
+            col_eq, Fronteiras, vazio_direita, k, printa);
     
     elseif item == "e2"
         
@@ -76,15 +82,17 @@ function [A, iter] = ...
         rows_bobina = row_eq(4):row_eq(16);
         cols_bobina = [col_eq(14):col_eq(16) col_eq(20):col_eq(22)-1];
                 
-        instantes = tempos(end)-1;
-        Tempo = 0:dt:instantes*dt; % Vetor de tempos
+        Tempo = 0:dt:tempos(end)*dt; % Vetor de tempos
         iter = 0; % contador de iteracoes
         
-        Ainstantes = repmat(A, [1 1 3]);
+        Atempos = repmat(A, [1 1 length(tempos)]); % Matriz que guardará A nos tempos desejados
         A = repmat(A, [1 1 2]); % Guarda o estado atual e anterior da matriz A
         k = 1;
         
         lambda = 1.75; % lambda de sobrerrelaxação
+        
+        [Bx, By, Hx, Hy] = deal(zeros(rows, cols, length(tempos)));
+        [Fela_x, Fela_y] = deal(zeros(1, tempos(end)));
         
         for t=Tempo
             
@@ -161,15 +169,29 @@ function [A, iter] = ...
                 end
             end
            
-            for idx=1:length(tempos)    
-                if iter == tempos(idx)
-                    Ainstantes(:, :, idx) = A(:, :, k+1);
+            % Calcula B, H e Fela para o instante de tempo
+            [Bx_t, By_t, Hx_t, Hy_t, Fela_x_t, Fela_y_t]...
+                = calcula_campo_e_forca(A, mi0, MIx, MIy, dx, dy, rows, ...
+                cols, col_eq, Fronteiras, vazio_direita, k+1, 0);
+            
+            % Adiciona Fela na array
+            Fela_x(iter) =  Fela_x_t;
+            Fela_y(iter) =  Fela_y_t;
+            
+            % Se for um dos tempos desejados, salva A, B e H
+            for idx_t=1:length(tempos)
+                if iter == tempos(idx_t)
+                    Atempos(:, :, idx_t) = A(:, :, k+1);
+                    Bx(:, :, idx_t)= Bx_t;
+                    By(:, :, idx_t)= By_t;
+                    Hx(:, :, idx_t)= Hx_t;
+                    Hy(:, :, idx_t)= Hy_t;
                 end
             end
             
         end
         
-        A = Ainstantes;
+        A = Atempos;
         
     end
    

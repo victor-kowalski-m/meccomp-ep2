@@ -6,7 +6,6 @@ Simulation of electromagnectic effects on a magnetic levitation train using the 
 
 Sample of the results (magnetic field intensity vectors over the cross section of the electromagnet):
 
-<img src="figuras/item_c_H_dx_2_5mm.png" alt="drawing" width="500"/>
-
+<img src="plots/png files/item_c_H_dx_2_5mm.png" alt="drawing" width="500"/>
 
 Several other plots are shown in the folder *plots*.

@@ -8,4 +8,4 @@ Sample of the results (magnetic field intensity vectors over the cross section o
 
 <img src="plots/png files/item_c_H_dx_2_5mm.png" alt="drawing" width="500"/>
 
-Several other plots are shown in the folder *plots*.
+Several other plots are shown in the folder [plots](plots).
